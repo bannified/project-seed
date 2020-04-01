@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 // Unity 2019.3 has an experimental 'disable domain reload on play'
 // feature. keeping any global state between sessions will break
 // Mirror and most of our user's projects. don't allow it for now.
@@ -72,3 +73,4 @@ namespace Mirror
 #endif
     }
 }
+#endif
