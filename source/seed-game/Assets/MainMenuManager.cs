@@ -9,6 +9,8 @@ public class MainMenuManager : MonoBehaviour
     GameObject MainMenuGroup;
     [SerializeField]
     LobbyGroupController LobbyGroup;
+    [SerializeField]
+    ServerBrowser ListServerGroup;
 
     public void OnCreateLobbyClicked()
     {
@@ -38,5 +40,11 @@ public class MainMenuManager : MonoBehaviour
         LobbyGroup.ClearAllPlayerLobbyCells();
         NetworkManager.singleton.StopClient();
         NetworkManager.singleton.StopHost();
+    }
+
+    public void OnListServerButtonClicked()
+    {
+        MainMenuGroup.SetActive(false);
+        ListServerGroup.gameObject.SetActive(true);
     }
 }
