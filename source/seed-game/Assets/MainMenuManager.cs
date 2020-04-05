@@ -47,6 +47,19 @@ public class MainMenuManager : MonoBehaviour
         NetworkManager.singleton.StartHost();
     }
 
+    public void OnSteamJoinLobbyClicked()
+    {
+        MainMenuGroup.SetActive(false);
+        LobbyGroup.gameObject.SetActive(true);
+        if (NetworkManager.singleton is SeedNetworkRoomManager room)
+        {
+            room.playerName = SeedSteamManager.SeedInstance.UserSteamName;
+            room.SwitchToSteamTransport();
+        }
+
+        NetworkManager.singleton.StartClient();
+    }
+
     public void RefreshPlayerList()
     {
         LobbyGroup.ClearAllPlayerLobbyCells();
