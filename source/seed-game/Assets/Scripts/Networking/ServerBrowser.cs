@@ -21,6 +21,12 @@ public class ServerBrowser : MonoBehaviour
     [SerializeField]
     private GameObject ServerCellPrefab;
 
+    [Header("Not part of prefab, setup")]
+    [SerializeField]
+    private GameObject MainMenuGroup;
+    [SerializeField]
+    private LobbyGroupController LobbyGroup;
+
     private void Awake()
     {
         Servers = new List<ServerListEntry>();
@@ -74,5 +80,17 @@ public class ServerBrowser : MonoBehaviour
         }
 
         ServerCellList.Clear();
+    }
+
+    public void OnManualJoinClicked()
+    {
+        MainMenuGroup.SetActive(false);
+        LobbyGroup.gameObject.SetActive(true);
+        this.gameObject.SetActive(false);
+        if (Mirror.NetworkManager.singleton is SeedNetworkRoomManager room)
+        {
+            room.SwitchToDirectIPTransport();
+        }
+        Mirror.NetworkManager.singleton.StartClient();
     }
 }

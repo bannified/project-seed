@@ -19,6 +19,12 @@ public class SeedNetworkRoomManager : NetworkManager
     [SerializeField]
     private LobbyGroupController lobbyGroup;
 
+    [SerializeField]
+    private Transport steamTransport;
+
+    [SerializeField]
+    private Transport directIPTransport;
+
     public class CreatePlayerMessage : MessageBase
     {
         public string name;
@@ -36,6 +42,18 @@ public class SeedNetworkRoomManager : NetworkManager
         {
             p.UpdateLobbyPlayerList();
         }
+    }
+
+    public void SwitchToDirectIPTransport()
+    {
+        Transport.activeTransport = directIPTransport;
+        transport = directIPTransport;
+    }
+
+    public void SwitchToSteamTransport()
+    {
+        Transport.activeTransport = steamTransport;
+        transport = steamTransport;
     }
 
     private void OnCreatePlayer(NetworkConnection conn, CreatePlayerMessage createPlayerMessage)

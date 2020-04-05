@@ -16,6 +16,10 @@ public class MainMenuManager : MonoBehaviour
     {
         MainMenuGroup.SetActive(false);
         LobbyGroup.gameObject.SetActive(true);
+        if (NetworkManager.singleton is SeedNetworkRoomManager room)
+        {
+            room.SwitchToDirectIPTransport();
+        }
         NetworkManager.singleton.StartHost();
     }
 
@@ -23,6 +27,11 @@ public class MainMenuManager : MonoBehaviour
     {
         MainMenuGroup.SetActive(false);
         LobbyGroup.gameObject.SetActive(true);
+        if (NetworkManager.singleton is SeedNetworkRoomManager room)
+        {
+            room.SwitchToDirectIPTransport();
+        }
+
         NetworkManager.singleton.StartClient();
     }
 
