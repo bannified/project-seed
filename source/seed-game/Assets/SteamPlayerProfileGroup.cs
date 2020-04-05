@@ -15,7 +15,7 @@ public class SteamPlayerProfileGroup : MonoBehaviour
     [SerializeField]
     private Image PlayerAvatarImage;
 
-    private void Awake()
+    private void Start()
     {
         SeedSteamManager.SeedInstance.SteamSelfUserInfoLoaded += SetSteamUserInfo;
         SeedSteamManager.SeedInstance.UserAvatarLoaded += SetAvatarImage;
