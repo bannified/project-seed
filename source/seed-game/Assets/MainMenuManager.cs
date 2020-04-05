@@ -41,6 +41,7 @@ public class MainMenuManager : MonoBehaviour
         LobbyGroup.gameObject.SetActive(true);
         if (NetworkManager.singleton is SeedNetworkRoomManager room)
         {
+            room.playerName = SeedSteamManager.SeedInstance.UserSteamName;
             room.SwitchToSteamTransport();
         }
         NetworkManager.singleton.StartHost();
