@@ -13,6 +13,7 @@ using System;
 
 namespace Tember
 {
+    [System.Serializable]
     public class ServerListEntry
     {
         public CSteamID steamId;
@@ -84,6 +85,12 @@ steamId, name, ip, port, currentPlayers, maxPlayers);
 
             Debug.Log(lobbyDataString);
         }
+
+        /* Comparers for sorting Servers */
+        public static IComparer<ServerListEntry> GetServerPingComparer()
+        {
+            return Util.FunctionalComparer<ServerListEntry>.Create((s1, s2) => { return s2.ping.time - s1.ping.time; });
+        }
     }
 
     public class SeedListServer : MonoBehaviour
@@ -91,7 +98,14 @@ steamId, name, ip, port, currentPlayers, maxPlayers);
         CallResult<LobbyMatchList_t> m_CallResultLobbyMatchList;
         Callback<LobbyDataUpdate_t> m_CallbackLobbyInfo;
 
+        public System.Action<ServerListEntry> ServerFound;
+        public System.Action AllServersLoaded;
+
         public List<ServerListEntry> ServerEntries;
+
+        private uint loadedCount;
+
+        private uint numberServersToLoad;
 
         public void Start()
         {
@@ -120,11 +134,15 @@ steamId, name, ip, port, currentPlayers, maxPlayers);
 
         public void OnLobbyDataReceived(LobbyDataUpdate_t data)
         {
-            Debug.LogFormat("Lobby {0} Data Received // Success: {1}", data.m_ulSteamIDLobby, data.m_bSuccess);
             CSteamID lobbyId = new CSteamID(data.m_ulSteamIDLobby);
             ServerListEntry entry = new ServerListEntry(lobbyId);
             ServerEntries.Add(entry);
-            Debug.Log(entry);
+            ServerFound?.Invoke(entry);
+            ++loadedCount;
+            if (loadedCount == numberServersToLoad)
+            {
+                AllServersLoaded?.Invoke();
+            }
         }
 
         public void OnLobbyMatchListReceived(LobbyMatchList_t lobbyMatchList, bool bIsFailure)
@@ -139,10 +157,12 @@ steamId, name, ip, port, currentPlayers, maxPlayers);
 
             ServerEntries.Capacity = Convert.ToInt32(lobbyMatchList.m_nLobbiesMatching);
 
+            loadedCount = 0;
+            numberServersToLoad = lobbyMatchList.m_nLobbiesMatching;
+
             for (int lobbyIndex = 0; lobbyIndex < lobbyMatchList.m_nLobbiesMatching; lobbyIndex++)
             {
                 CSteamID lobbyId = SteamMatchmaking.GetLobbyByIndex(lobbyIndex);
-
                 bool bLobbyRequestDataSuccess = SteamMatchmaking.RequestLobbyData(lobbyId);
             }
         }
