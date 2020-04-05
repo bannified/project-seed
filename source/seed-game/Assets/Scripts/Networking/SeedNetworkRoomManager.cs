@@ -73,6 +73,13 @@ public class SeedNetworkRoomManager : NetworkManager
         networkAddress = hostname;
     }
 
+    public void CreateSteamLobby()
+    {
+        transport = steamTransport;
+        Transport.activeTransport = steamTransport;
+
+    }
+
     #region Unity Callbacks
 
     public override void OnValidate()
