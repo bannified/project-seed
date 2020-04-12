@@ -69,6 +69,8 @@ public class SeedSteamLobby : MonoBehaviour
         {
             CSteamID member = SteamMatchmaking.GetLobbyMemberByIndex(_LobbySteamID, lobbyMemberIndex);
             _LobbyMembersSteamIDs.Add(member);
+
+            SeedSteamManager.SeedInstance.FetchSteamUserInfo(member);
         }
 
         LobbyDataUpdated?.Invoke(LobbyMembersSteamIDs);

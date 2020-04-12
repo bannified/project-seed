@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Steamworks;
 using UnityEngine.UI;
-using System;
 
 [System.Serializable]
 public class SeedUserProfile
@@ -13,11 +12,25 @@ public class SeedUserProfile
     public Sprite UserAvatarSprite;
     public CSteamID SteamID;
 
+    public delegate void ProfileUpdatedDelegate(SeedUserProfile profile);
+    public event ProfileUpdatedDelegate ProfileUpdatedEvent;
+
     public SeedUserProfile(ulong ulSteamId)
     {
         SteamID = new CSteamID(ulSteamId);
+    }
+
+    public void LoadSteamData()
+    {
         Name = SteamFriends.GetFriendPersonaName(SteamID);
         UserAvatarHandle = SteamFriends.GetLargeFriendAvatar(SteamID);
+        ProfileUpdatedEvent?.Invoke(this);
+    }
+
+    public void SetAvatarSprite(Sprite sprite)
+    {
+        UserAvatarSprite = sprite;
+        ProfileUpdatedEvent?.Invoke(this);
     }
 
     public static bool operator==(SeedUserProfile p1, SeedUserProfile p2)
@@ -71,9 +84,7 @@ public class SeedSteamManager : SteamManager
 
     // Events
     public System.Action<CSteamID> SteamUserInfoLoaded;
-    public System.Action<SeedUserProfile> UserAvatarLoaded;
-    public System.Action SelfUserAvatarLoaded;
-    public System.Action SelfUserInfoLoaded;
+    public System.Action<SeedUserProfile> SelfUserInfoLoaded;
 
     // Callbacks
     private Callback<AvatarImageLoaded_t> avatarCallback;
@@ -98,25 +109,21 @@ public class SeedSteamManager : SteamManager
         {
             UserSteamID = SteamUser.GetSteamID();
 
-            LocalUserProfile = TryAddProfile(UserSteamID.m_SteamID);
-
-            if (bSelfUserDataLoaded)
-            {
-                CancelInvoke("FetchSelfSteamInfo");
-                return;
-            }
-
-            FetchSteamUserInfo(UserSteamID);
+            LocalUserProfile = FetchSteamUserInfo(UserSteamID);
         }
     }
 
-    private void FetchSteamUserInfo(CSteamID steamID)
+    public SeedUserProfile FetchSteamUserInfo(CSteamID steamID)
     {
+        SeedUserProfile profile = TryAddProfile(steamID.m_SteamID);
+
         if (!SteamFriends.RequestUserInformation(steamID, false)) // Goes to a PersonaStateChange_t callback if not loaded
         {
             // loaded already.
             HandleSteamUserLoaded(steamID.m_SteamID);
         }
+
+        return profile;
     }
 
     private void OnAvatarImageLoaded(AvatarImageLoaded_t avatar)
@@ -137,11 +144,10 @@ public class SeedSteamManager : SteamManager
 
             if (profile.SteamID.m_SteamID == UserSteamID.m_SteamID)
             {
-                LocalUserProfile.UserAvatarSprite = result;
-                SelfUserAvatarLoaded?.Invoke();
+                LocalUserProfile.SetAvatarSprite(result);
             }
 
-            UserAvatarLoaded?.Invoke(profile);
+            //UserAvatarLoaded?.Invoke(profile);
 
         }
     }
@@ -197,7 +203,7 @@ public class SeedSteamManager : SteamManager
         return null;
     }
 
-    private SeedUserProfile TryAddProfile(ulong steamID)
+    public SeedUserProfile TryAddProfile(ulong steamID)
     {
         SeedUserProfile profile;
 
@@ -213,11 +219,12 @@ public class SeedSteamManager : SteamManager
     private void HandleSteamUserLoaded(ulong steamID)
     {
         SeedUserProfile profile = TryAddProfile(steamID);
-        profile.UserAvatarSprite = TryConvertHandleToSprite(profile.UserAvatarHandle);
-        if (profile == LocalUserProfile) // self
+        profile.LoadSteamData();
+        profile.SetAvatarSprite(TryConvertHandleToSprite(profile.UserAvatarHandle));
+
+        if (profile.SteamID == UserSteamID)
         {
-            bSelfUserDataLoaded = true;
-            SelfUserInfoLoaded?.Invoke();
+            SelfUserInfoLoaded?.Invoke(profile);
         }
 
         SteamUserInfoLoaded?.Invoke(profile.SteamID);

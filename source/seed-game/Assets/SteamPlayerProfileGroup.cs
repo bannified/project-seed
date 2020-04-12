@@ -15,23 +15,31 @@ public class SteamPlayerProfileGroup : MonoBehaviour
     [SerializeField]
     private Image PlayerAvatarImage;
 
-    private void Start()
+    [SerializeField]
+    SeedUserProfile profile;
+
+    public void Start()
     {
-        SeedSteamManager.SeedInstance.SelfUserInfoLoaded += SetSteamUserInfo;
-        SeedSteamManager.SeedInstance.SelfUserAvatarLoaded += SetAvatarImage;
+        if (SeedSteamManager.SeedInstance.LocalUserProfile.SteamID.m_SteamID == 0)
+        {
+            SeedSteamManager.SeedInstance.SelfUserInfoLoaded += SetupWithUserProfile;
+        } else
+        {
+            SetupWithUserProfile(SeedSteamManager.SeedInstance.LocalUserProfile);
+        }
     }
 
-    private void SetSteamUserInfo()
+    public void SetupWithUserProfile(SeedUserProfile profile)
     {
-        SeedSteamManager steam = SeedSteamManager.SeedInstance;
-        PlayerSteamIdText.text = steam.LocalUserProfile.SteamID.ToString();
-        PlayerNameText.text = steam.LocalUserProfile.Name;
-        PlayerAvatarImage.sprite = steam.LocalUserProfile.UserAvatarSprite;
+        this.profile = profile;
+        SetSteamUserInfo(profile);
+        profile.ProfileUpdatedEvent += SetSteamUserInfo;
     }
 
-    private void SetAvatarImage()
+    private void SetSteamUserInfo(SeedUserProfile profile)
     {
-        SeedSteamManager steam = SeedSteamManager.SeedInstance;
-        PlayerAvatarImage.sprite = steam.LocalUserProfile.UserAvatarSprite;
+        PlayerSteamIdText.text = profile.SteamID.ToString();
+        PlayerNameText.text = profile.Name;
+        PlayerAvatarImage.sprite = profile.UserAvatarSprite;
     }
 }

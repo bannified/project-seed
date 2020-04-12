@@ -40,7 +40,7 @@ public class LobbyGroupController : MonoBehaviour
     public void AddPlayer(SeedUserProfile profile)
     {
         LobbyPlayerCellController cell = Instantiate(LobbyPlayerCellPrefab, PlayersPanel.transform).GetComponent<LobbyPlayerCellController>();
-        cell.SetPlayerName(profile.Name);
+        cell.SetupWithUserProfile(profile);
 
         playerNameToLobbyCellMap.Add(profile.SteamID.m_SteamID.ToString(), cell);
     }
