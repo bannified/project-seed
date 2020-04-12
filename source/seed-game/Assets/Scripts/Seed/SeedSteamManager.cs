@@ -3,14 +3,50 @@ using System.Collections.Generic;
 using UnityEngine;
 using Steamworks;
 using UnityEngine.UI;
+using System;
 
+[System.Serializable]
+public class SeedUserProfile
+{
+    public string Name;
+    public int UserAvatarHandle;
+    public Sprite UserAvatarSprite;
+    public CSteamID SteamID;
 
-// Todo: User profiles
-//public class SeedUserProfile
-//{
-//    public string Name;
+    public SeedUserProfile(ulong ulSteamId)
+    {
+        SteamID = new CSteamID(ulSteamId);
+        Name = SteamFriends.GetFriendPersonaName(SteamID);
+        UserAvatarHandle = SteamFriends.GetLargeFriendAvatar(SteamID);
+    }
 
-//}
+    public static bool operator==(SeedUserProfile p1, SeedUserProfile p2)
+    {
+        return p1.SteamID.m_SteamID == p2.SteamID.m_SteamID;
+    }
+    public static bool operator !=(SeedUserProfile p1, SeedUserProfile p2)
+    {
+        return p1.SteamID.m_SteamID != p2.SteamID.m_SteamID;
+    }
+
+    public override bool Equals(object obj) 
+    {
+        SeedUserProfile casted = obj as SeedUserProfile;
+        if (obj == null || casted == null) return false;
+        return casted == this;
+    }
+
+    public override int GetHashCode()
+    {
+        return SteamID.m_SteamID.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return string.Format("SeedUserProfile: {0}, {1}, {2}, {3}", Name, SteamID.m_SteamID.ToString(), UserAvatarHandle, UserAvatarSprite);
+    }
+
+}
 
 public class SeedSteamManager : SteamManager
 {
@@ -20,6 +56,7 @@ public class SeedSteamManager : SteamManager
     [Header("Essentials")]
     [SerializeField]
     public CSteamID UserSteamID;
+    public SeedUserProfile LocalUserProfile;
     public string UserSteamName;
 
     [Header("Cosmetics")]
@@ -28,54 +65,88 @@ public class SeedSteamManager : SteamManager
     int UserAvatarHandle = 0;
     bool bSelfUserDataLoaded = false;
 
-    //[Header("Other Users Cache")]
-    //Dictionary<CSteamID, SeedUserProfile> AllLoadedSteamProfiles;
+    [Header("Other Users Cache")]
+    private Dictionary<CSteamID, SeedUserProfile> _AllLoadedUserProfiles = new Dictionary<CSteamID, SeedUserProfile>();
+    public IReadOnlyDictionary<CSteamID, SeedUserProfile> AllLoadedUserProfiles { get { return _AllLoadedUserProfiles; } }
 
     // Events
-    public System.Action<Sprite> UserAvatarLoaded;
-    public System.Action SteamSelfUserInfoLoaded;
+    public System.Action<CSteamID> SteamUserInfoLoaded;
+    public System.Action<SeedUserProfile> UserAvatarLoaded;
+    public System.Action SelfUserAvatarLoaded;
+    public System.Action SelfUserInfoLoaded;
 
     // Callbacks
     private Callback<AvatarImageLoaded_t> avatarCallback;
-    private Callback<PersonaStateChange_t> selfPersonaStateChangeCallback;
     private Callback<PersonaStateChange_t> personaStateChangeCallback;
 
     protected override void Awake()
     {
         base.Awake();
         avatarCallback = new Callback<AvatarImageLoaded_t>(OnAvatarImageLoaded);
-        selfPersonaStateChangeCallback = new Callback<PersonaStateChange_t>(OnSelfPersonaStateLoaded);
-        personaStateChangeCallback = new Callback<PersonaStateChange_t>(OnNonSelfPersonaStateLoaded);
+        personaStateChangeCallback = new Callback<PersonaStateChange_t>(OnPersonaStateLoaded);
     }
 
     // Start is called before the first frame update
     protected void Start()
     {
-        Invoke("FetchSteamUserInfo", 1.0f);
+        FetchSelfSteamInfo();
     }
 
-    private void FetchSteamUserInfo()
+    private void FetchSelfSteamInfo()
     {
         if (Initialized)
         {
             UserSteamID = SteamUser.GetSteamID();
 
+            LocalUserProfile = TryAddProfile(UserSteamID.m_SteamID);
+
             if (bSelfUserDataLoaded)
             {
-                CancelInvoke("FetchSteamUserInfo");
+                CancelInvoke("FetchSelfSteamInfo");
                 return;
             }
 
-            SteamFriends.RequestUserInformation(UserSteamID, false); // Goes to a PersonaStateChange_t callback
+            FetchSteamUserInfo(UserSteamID);
+        }
+    }
+
+    private void FetchSteamUserInfo(CSteamID steamID)
+    {
+        if (!SteamFriends.RequestUserInformation(steamID, false)) // Goes to a PersonaStateChange_t callback if not loaded
+        {
+            // loaded already.
+            HandleSteamUserLoaded(steamID.m_SteamID);
         }
     }
 
     private void OnAvatarImageLoaded(AvatarImageLoaded_t avatar)
     {
-        OnAvatarImageLoaded(avatar.m_iImage);
+        Sprite result = TryConvertHandleToSprite(avatar.m_iImage);
+
+        if (result != null)
+        {
+            SeedUserProfile profile;
+
+            if (!_AllLoadedUserProfiles.TryGetValue(avatar.m_steamID, out profile))
+            {
+                profile = new SeedUserProfile(avatar.m_steamID.m_SteamID);
+                _AllLoadedUserProfiles.Add(profile.SteamID, profile);
+            }
+
+            profile.UserAvatarSprite = result;
+
+            if (profile.SteamID.m_SteamID == UserSteamID.m_SteamID)
+            {
+                LocalUserProfile.UserAvatarSprite = result;
+                SelfUserAvatarLoaded?.Invoke();
+            }
+
+            UserAvatarLoaded?.Invoke(profile);
+
+        }
     }
 
-    private void OnAvatarImageLoaded(int avatarHandle)
+    private Sprite TryConvertHandleToSprite(int avatarHandle)
     {
         uint imageWidth, imageHeight;
         SteamUtils.GetImageSize(avatarHandle, out imageWidth, out imageHeight);
@@ -90,29 +161,66 @@ public class SeedSteamManager : SteamManager
             Texture2D tex = new Texture2D(System.Convert.ToInt32(imageWidth), System.Convert.ToInt32(imageHeight), TextureFormat.RGBA32, false);
             tex.LoadRawTextureData(imageBuf);
             tex.Apply();
-            UserAvatar = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, -tex.height), new Vector2());
-            UserAvatarLoaded?.Invoke(UserAvatar);
+            return Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, -tex.height), new Vector2());
         }
+
+        return null;
     }
 
-    private void OnSelfPersonaStateLoaded(PersonaStateChange_t persona)
+    private void OnPersonaStateLoaded(PersonaStateChange_t persona)
     {
-        if (UserAvatarHandle == 0)
+        SteamUserInfoLoaded?.Invoke(new CSteamID(persona.m_ulSteamID));
+        HandleSteamUserLoaded(persona.m_ulSteamID);
+    }
+
+    public SeedUserProfile TryGetProfile(CSteamID steamID)
+    {
+        SeedUserProfile profile;
+
+        if (_AllLoadedUserProfiles.TryGetValue(steamID, out profile))
         {
-            UserAvatarHandle = SteamFriends.GetLargeFriendAvatar(UserSteamID);
-            if (UserAvatarHandle > 0)
-            {
-                OnAvatarImageLoaded(UserAvatarHandle);
-            }
+            return profile;
         }
-        UserSteamName = SteamFriends.GetPersonaName();
-        bSelfUserDataLoaded = true;
-        SteamSelfUserInfoLoaded?.Invoke();
+
+        return null;
     }
 
-    private void OnNonSelfPersonaStateLoaded(PersonaStateChange_t persona)
+    public SeedUserProfile TryGetProfile(ulong steamID)
     {
-        // Add to AllLoadedSteamProfiles
+        SeedUserProfile profile;
+
+        if (_AllLoadedUserProfiles.TryGetValue(new CSteamID(steamID), out profile))
+        {
+            return profile;
+        }
+
+        return null;
+    }
+
+    private SeedUserProfile TryAddProfile(ulong steamID)
+    {
+        SeedUserProfile profile;
+
+        if (!_AllLoadedUserProfiles.TryGetValue(new CSteamID(steamID), out profile))
+        {
+            profile = new SeedUserProfile(steamID);
+            _AllLoadedUserProfiles.Add(profile.SteamID, profile);
+        }
+
+        return profile;
+    }
+
+    private void HandleSteamUserLoaded(ulong steamID)
+    {
+        SeedUserProfile profile = TryAddProfile(steamID);
+        profile.UserAvatarSprite = TryConvertHandleToSprite(profile.UserAvatarHandle);
+        if (profile == LocalUserProfile) // self
+        {
+            bSelfUserDataLoaded = true;
+            SelfUserInfoLoaded?.Invoke();
+        }
+
+        SteamUserInfoLoaded?.Invoke(profile.SteamID);
     }
 
 }

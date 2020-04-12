@@ -17,19 +17,21 @@ public class SteamPlayerProfileGroup : MonoBehaviour
 
     private void Start()
     {
-        SeedSteamManager.SeedInstance.SteamSelfUserInfoLoaded += SetSteamUserInfo;
-        SeedSteamManager.SeedInstance.UserAvatarLoaded += SetAvatarImage;
+        SeedSteamManager.SeedInstance.SelfUserInfoLoaded += SetSteamUserInfo;
+        SeedSteamManager.SeedInstance.SelfUserAvatarLoaded += SetAvatarImage;
     }
 
     private void SetSteamUserInfo()
     {
         SeedSteamManager steam = SeedSteamManager.SeedInstance;
-        PlayerSteamIdText.text = steam.UserSteamID.m_SteamID.ToString();
-        PlayerNameText.text = steam.UserSteamName;
+        PlayerSteamIdText.text = steam.LocalUserProfile.SteamID.ToString();
+        PlayerNameText.text = steam.LocalUserProfile.Name;
+        PlayerAvatarImage.sprite = steam.LocalUserProfile.UserAvatarSprite;
     }
 
-    private void SetAvatarImage(Sprite avatarSprite)
+    private void SetAvatarImage()
     {
-        PlayerAvatarImage.sprite = avatarSprite;
+        SeedSteamManager steam = SeedSteamManager.SeedInstance;
+        PlayerAvatarImage.sprite = steam.LocalUserProfile.UserAvatarSprite;
     }
 }
