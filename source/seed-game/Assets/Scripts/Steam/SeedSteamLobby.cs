@@ -101,7 +101,7 @@ public class SeedSteamLobby : MonoBehaviour
 
     private void OnLobbyChatUpdate(LobbyChatUpdate_t chatUpdateMsg)
     {
-        SeedUserProfile userChanged = SeedSteamManager.SeedInstance.TryGetProfile(chatUpdateMsg.m_ulSteamIDUserChanged);
+        SeedUserProfile userChanged = SeedSteamManager.SeedInstance.TryAddProfile(chatUpdateMsg.m_ulSteamIDUserChanged);
         EChatMemberStateChange stateChange = (EChatMemberStateChange)chatUpdateMsg.m_rgfChatMemberStateChange;
         switch (stateChange)
         {
