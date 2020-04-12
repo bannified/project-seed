@@ -20,11 +20,11 @@ public class SeedSteamLobby : MonoBehaviour
 
     private Callback<LobbyChatMsg_t> m_lobbyChatMessageCallback;
 
-    public CSteamID LobbySteamID { get { return _CreatedLobbySteamID; } }
+    public CSteamID LobbySteamID { get { return _LobbySteamID; } }
     [SerializeField]
     private CSteamID _LobbySteamID;
 
-    public CSteamID CreatedSteamID { get { return CreatedSteamID; } }
+    public CSteamID CreatedSteamID { get { return _CreatedLobbySteamID; } }
     [SerializeField]
     private CSteamID _CreatedLobbySteamID;
 
