@@ -5,20 +5,26 @@ using Steamworks;
 
 public class SeedSteamLobby : MonoBehaviour
 {
+    private static readonly int MAX_CHAT_MSG_LEN = 500;
+
     public System.Action<CSteamID> LobbyCreatedEvent;
     public System.Action<CSteamID> LobbyEnterEvent;
     public System.Action<IReadOnlyCollection<CSteamID>> LobbyDataUpdated;
+
+    public System.Action<string, SeedUserProfile> ChatMessageReceivedEvent;
 
     private Callback<LobbyCreated_t> m_lobbyCreatedCallback;
     private Callback<LobbyEnter_t> m_lobbyEnterCallback;
     private Callback<LobbyDataUpdate_t> m_lobbyDataUpdateCallback;
     private Callback<LobbyChatUpdate_t> m_lobbyChatUpdateCallback;
 
-    public CSteamID LobbySteamID { get; }
+    private Callback<LobbyChatMsg_t> m_lobbyChatMessageCallback;
+
+    public CSteamID LobbySteamID { get { return _CreatedLobbySteamID; } }
     [SerializeField]
     private CSteamID _LobbySteamID;
 
-    public CSteamID CreatedSteamID { get; }
+    public CSteamID CreatedSteamID { get { return CreatedSteamID; } }
     [SerializeField]
     private CSteamID _CreatedLobbySteamID;
 
@@ -32,6 +38,7 @@ public class SeedSteamLobby : MonoBehaviour
         m_lobbyEnterCallback = Callback<LobbyEnter_t>.Create(OnLobbyEnter);
         m_lobbyDataUpdateCallback = Callback<LobbyDataUpdate_t>.Create(OnLobbyDataUpdate);
         m_lobbyChatUpdateCallback = Callback<LobbyChatUpdate_t>.Create(OnLobbyChatUpdate);
+        m_lobbyChatMessageCallback = Callback<LobbyChatMsg_t>.Create(OnReceiveChatMessage);
     }
 
     public void CreateLobby()
@@ -52,7 +59,6 @@ public class SeedSteamLobby : MonoBehaviour
                 break;
         }
         _CreatedLobbySteamID = new CSteamID(createdMsg.m_ulSteamIDLobby);
-
     }
 
     private void OnLobbyEnter(LobbyEnter_t enteredMsg)
@@ -91,5 +97,25 @@ public class SeedSteamLobby : MonoBehaviour
     public void Join(string lobbyId)
     {
         SteamMatchmaking.JoinLobby(new CSteamID(System.Convert.ToUInt64(lobbyId)));
+    }
+
+    public void SendChatMessage(string msg, SeedUserProfile sender = null)
+    {
+        SteamMatchmaking.SendLobbyChatMsg(LobbySteamID, msg.ToEncodedByteArray(System.Text.Encoding.UTF32), msg.Length*4);
+    }
+
+    public void OnReceiveChatMessage(LobbyChatMsg_t chatMessage)
+    {
+        CSteamID chatterId;
+        EChatEntryType chatEntryType;
+        byte[] arr = new byte[MAX_CHAT_MSG_LEN];
+        int msgLen = SteamMatchmaking.GetLobbyChatEntry(new CSteamID(chatMessage.m_ulSteamIDLobby), System.Convert.ToInt32(chatMessage.m_iChatID), 
+            out chatterId, arr, MAX_CHAT_MSG_LEN, out chatEntryType);
+
+        string msg = System.Text.Encoding.UTF32.GetString(arr);
+        msg = msg.TrimEnd('\0');
+        SeedUserProfile chatterProfile = SeedSteamManager.SeedInstance.TryGetProfile(chatterId);
+
+        ChatMessageReceivedEvent?.Invoke(msg, chatterProfile);
     }
 }

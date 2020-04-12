@@ -116,5 +116,7 @@ public class MainMenuManager : MonoBehaviour
         MainMenuGroup.SetActive(false);
         LobbyGroup.gameObject.SetActive(true);
         LobbyGroup.ClearAll();
+
+        LobbyGroup.SetupWithLobby(SteamLobby);
     }
 }

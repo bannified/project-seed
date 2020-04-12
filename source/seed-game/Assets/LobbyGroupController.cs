@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 using UnityEngine.UI;
 using Steamworks;
+using TMPro;
 
 public class LobbyGroupController : MonoBehaviour
 {
@@ -19,14 +20,54 @@ public class LobbyGroupController : MonoBehaviour
     [SerializeField]
     private ScrollRect ChatScrollRect;
 
+    [SerializeField]
+    private TMP_InputField ChatMessageInputField;
+
+    [SerializeField]
+    private SeedSteamLobby CurrentLobby;
+
+    [SerializeField]
+    private TMP_Text ChatHistoryText;
+
     private void Awake()
     {
         playerNameToLobbyCellMap = new Dictionary<string, LobbyPlayerCellController>();
     }
 
-    public void SetupWithSteamLobby(SeedSteamLobby steamLobby)
+    private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            // Send message
+            SendLobbyChatMessage();
+        }
+    }
 
+    public void SetupWithLobby(SeedSteamLobby lobby)
+    {
+        this.CurrentLobby = lobby;
+        CurrentLobby.ChatMessageReceivedEvent += OnReceiveLobbyChatMessage;
+    }
+
+    private void SendLobbyChatMessage()
+    {
+        SeedUserProfile profile = SeedSteamManager.SeedInstance.LocalUserProfile;
+        if (profile.SteamID.m_SteamID == 0)
+        {
+            return;
+        }
+
+        CurrentLobby.SendChatMessage(ChatMessageInputField.text, profile);
+        ChatMessageInputField.text = "";
+        ChatMessageInputField.ActivateInputField();
+    }
+
+    private void OnReceiveLobbyChatMessage(string message, SeedUserProfile sender)
+    {
+        Debug.LogFormat("Chat message received from {0}: {1}", sender.Name, message);
+        string msg = string.Format("{0}: {1}{2}", sender.Name, message, System.Environment.NewLine);
+        ChatHistoryText.text += msg;
+        ChatScrollRect.verticalScrollbar.value = 0;
     }
 
     public void AddPlayers(List<SeedNetworkRoomPlayer> players)
@@ -65,8 +106,6 @@ public class LobbyGroupController : MonoBehaviour
 
     public void ClearAll()
     {
-        ChatScrollRect.transform.Clear();
-
         ClearAllPlayerLobbyCells();
     }
 

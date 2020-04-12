@@ -13,3 +13,11 @@ public static class TransformExtensions
     }
 }
 
+public static class StringExtensions
+{
+    public static byte[] ToEncodedByteArray(this string str, System.Text.Encoding encoding)
+    {
+        return encoding.GetBytes(str);
+    }
+}
+
