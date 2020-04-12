@@ -99,6 +99,7 @@ public class MainMenuManager : MonoBehaviour
         MainMenuGroup.SetActive(true);
         LobbyGroup.gameObject.SetActive(false);
         LobbyGroup.ClearAllPlayerLobbyCells();
+        LobbyGroup.Teardown();
         SteamLobby.LeaveLobby();
     }
 

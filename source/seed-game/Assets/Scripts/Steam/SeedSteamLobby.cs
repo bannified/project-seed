@@ -11,6 +11,9 @@ public class SeedSteamLobby : MonoBehaviour
     public System.Action<CSteamID> LobbyEnterEvent;
     public System.Action<IReadOnlyCollection<CSteamID>> LobbyDataUpdated;
 
+    public System.Action<CSteamID> PlayerLeaveEvent;
+    public System.Action<CSteamID> PlayerEnterEvent;
+
     public System.Action<string, SeedUserProfile> ChatMessageReceivedEvent;
 
     private Callback<LobbyCreated_t> m_lobbyCreatedCallback;
@@ -28,9 +31,13 @@ public class SeedSteamLobby : MonoBehaviour
     [SerializeField]
     private CSteamID _CreatedLobbySteamID;
 
+    /* Players in Lobby */
     [SerializeField]
     private List<CSteamID> _LobbyMembersSteamIDs = new List<CSteamID>();
     public IReadOnlyCollection<CSteamID> LobbyMembersSteamIDs { get { return _LobbyMembersSteamIDs.AsReadOnly(); } }
+
+    private Dictionary<CSteamID, bool> _PlayerToReadyStateDict = new Dictionary<CSteamID, bool>();
+    public IReadOnlyDictionary<CSteamID, bool> PlayerToReadyStateDict { get { return _PlayerToReadyStateDict; } }
 
     public void Awake()
     {
@@ -48,6 +55,7 @@ public class SeedSteamLobby : MonoBehaviour
 
     public void LeaveLobby()
     {
+        _LobbyMembersSteamIDs.Clear();
         SteamMatchmaking.LeaveLobby(LobbySteamID);
     }
 
@@ -74,29 +82,79 @@ public class SeedSteamLobby : MonoBehaviour
 
     private void OnLobbyDataUpdate(LobbyDataUpdate_t dataUpdateMsg)
     {
-
-        UpdateLobbyMembersList();
+        InitPlayerList();
         LobbyDataUpdated?.Invoke(LobbyMembersSteamIDs);
     }
 
     private void OnLobbyChatUpdate(LobbyChatUpdate_t chatUpdateMsg)
     {
-        UpdateLobbyMembersList();
-        LobbyDataUpdated?.Invoke(LobbyMembersSteamIDs);
+        SeedUserProfile userChanged = SeedSteamManager.SeedInstance.TryGetProfile(chatUpdateMsg.m_ulSteamIDUserChanged);
+        EChatMemberStateChange stateChange = (EChatMemberStateChange)chatUpdateMsg.m_rgfChatMemberStateChange;
+        switch (stateChange)
+        {
+            case EChatMemberStateChange.k_EChatMemberStateChangeEntered:
+                // add to list
+                AddPlayerToLobbyList(userChanged.SteamID);
+                break;
+            case EChatMemberStateChange.k_EChatMemberStateChangeLeft:
+            case EChatMemberStateChange.k_EChatMemberStateChangeKicked:
+            case EChatMemberStateChange.k_EChatMemberStateChangeDisconnected:
+            case EChatMemberStateChange.k_EChatMemberStateChangeBanned:
+                RemovePlayerFromLobbyList(userChanged.SteamID);
+                // leave
+                break;
+            default:
+                break;
+        }
     }
 
-    private void UpdateLobbyMembersList()
+    private void AddPlayerToLobbyList(CSteamID playerId)
     {
+        _LobbyMembersSteamIDs.Add(playerId);
+        SeedSteamManager.SeedInstance.FetchSteamUserInfo(playerId);
+        PlayerEnterEvent?.Invoke(playerId);
+    }
+
+    private void RemovePlayerFromLobbyList(CSteamID playerId)
+    {
+        _LobbyMembersSteamIDs.Remove(playerId);
+        PlayerLeaveEvent?.Invoke(playerId);
+    }
+
+    /// <summary>
+    /// Reloads the lobby member list.
+    /// </summary>
+    /// <returns>True if the new list is different from the old</returns>
+    private bool InitPlayerList()
+    {
+        List<CSteamID> before = new List<CSteamID>(_LobbyMembersSteamIDs);
+        bool bIsListDiff = false;
         _LobbyMembersSteamIDs.Clear();
 
         int numLobbyMembers = SteamMatchmaking.GetNumLobbyMembers(_LobbySteamID);
         for (int lobbyMemberIndex = 0; lobbyMemberIndex < numLobbyMembers; lobbyMemberIndex++)
         {
             CSteamID member = SteamMatchmaking.GetLobbyMemberByIndex(_LobbySteamID, lobbyMemberIndex);
-            _LobbyMembersSteamIDs.Add(member);
+            AddPlayerToLobbyList(member);
 
-            SeedSteamManager.SeedInstance.FetchSteamUserInfo(member);
+            if (before.Count > lobbyMemberIndex)
+            {
+                if (before[lobbyMemberIndex] != _LobbyMembersSteamIDs[lobbyMemberIndex])
+                {
+                    bIsListDiff = true;
+                }
+            } else
+            {
+                bIsListDiff = true;
+            }
         }
+
+        if (before.Count != _LobbyMembersSteamIDs.Count)
+        {
+            bIsListDiff = true;
+        }
+
+        return bIsListDiff;
     }
 
     public void Join(string lobbyId)
@@ -104,12 +162,35 @@ public class SeedSteamLobby : MonoBehaviour
         SteamMatchmaking.JoinLobby(new CSteamID(System.Convert.ToUInt64(lobbyId)));
     }
 
+    public bool IsPlayerReady(CSteamID playerID)
+    {
+        bool result = false;
+        PlayerToReadyStateDict.TryGetValue(playerID, out result);
+        return result;
+    }
+
+    public void SetPlayerReadyState(CSteamID playerID, bool state)
+    {
+        _PlayerToReadyStateDict[playerID] = state;
+    }
+
+    public void SetSelfReady(bool state)
+    {
+        if (SeedSteamManager.SeedInstance == null)
+        {
+            return;
+        }
+
+        string key = string.Format("{0}_readystate", SeedSteamManager.SeedInstance.LocalUserProfile.SteamID.m_SteamID);
+        string value = state ? "true" : "false";
+        SteamMatchmaking.SetLobbyMemberData(_LobbySteamID, key, "true");
+    }
 
     /* Lobby Chat */
 
     public void SendChatMessage(string msg, SeedUserProfile sender = null)
     {
-        SteamMatchmaking.SendLobbyChatMsg(LobbySteamID, msg.ToEncodedByteArray(System.Text.Encoding.UTF32), msg.Length*4);
+        SteamMatchmaking.SendLobbyChatMsg(LobbySteamID, msg.ToEncodedByteArray(System.Text.Encoding.UTF32), msg.Length * 4);
     }
 
     public void OnReceiveChatMessage(LobbyChatMsg_t chatMessage)
@@ -117,7 +198,7 @@ public class SeedSteamLobby : MonoBehaviour
         CSteamID chatterId;
         EChatEntryType chatEntryType;
         byte[] arr = new byte[MAX_CHAT_MSG_LEN];
-        int msgLen = SteamMatchmaking.GetLobbyChatEntry(new CSteamID(chatMessage.m_ulSteamIDLobby), System.Convert.ToInt32(chatMessage.m_iChatID), 
+        int msgLen = SteamMatchmaking.GetLobbyChatEntry(new CSteamID(chatMessage.m_ulSteamIDLobby), System.Convert.ToInt32(chatMessage.m_iChatID),
             out chatterId, arr, MAX_CHAT_MSG_LEN, out chatEntryType);
 
         string msg = System.Text.Encoding.UTF32.GetString(arr);
