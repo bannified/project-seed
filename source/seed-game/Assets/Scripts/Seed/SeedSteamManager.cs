@@ -22,18 +22,19 @@ public class SeedUserProfile
 
     public static bool operator==(SeedUserProfile p1, SeedUserProfile p2)
     {
-        return p1.SteamID.m_SteamID == p2.SteamID.m_SteamID;
+        if (p1 is null) return p2 is null;
+        return p1.Equals(p2);
     }
     public static bool operator !=(SeedUserProfile p1, SeedUserProfile p2)
     {
-        return p1.SteamID.m_SteamID != p2.SteamID.m_SteamID;
+        return !p1.Equals(p2);
     }
 
     public override bool Equals(object obj) 
     {
         SeedUserProfile casted = obj as SeedUserProfile;
         if (obj == null || casted == null) return false;
-        return casted == this;
+        return casted.SteamID.m_SteamID == this.SteamID.m_SteamID;
     }
 
     public override int GetHashCode()
@@ -50,7 +51,6 @@ public class SeedUserProfile
 
 public class SeedSteamManager : SteamManager
 {
-
     public static SeedSteamManager SeedInstance { get { return Instance as SeedSteamManager; } }
 
     [Header("Essentials")]

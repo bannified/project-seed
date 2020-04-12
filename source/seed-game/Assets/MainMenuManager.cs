@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using Steamworks;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -11,6 +12,17 @@ public class MainMenuManager : MonoBehaviour
     LobbyGroupController LobbyGroup;
     [SerializeField]
     ServerBrowser ListServerGroup;
+    [SerializeField]
+    SeedSteamLobby SteamLobby;
+
+    public string lobbyIDInputString { get; set; }
+
+    private void Awake()
+    {
+        SteamLobby.LobbyCreatedEvent += OnCreateSteamLobby;
+        SteamLobby.LobbyEnterEvent += OnJoinLobby;
+        SteamLobby.LobbyDataUpdated += LobbyGroup.UpdateChatLobby;
+    }
 
     public void OnCreateLobbyClicked()
     {
@@ -80,5 +92,29 @@ public class MainMenuManager : MonoBehaviour
     {
         MainMenuGroup.SetActive(false);
         ListServerGroup.gameObject.SetActive(true);
+    }
+
+    public void OnCreateSteamChatLobbyClicked()
+    {
+        SteamLobby.CreateLobby();
+    }
+
+    public void OnJoinSteamChatLobbyClicked()
+    {
+        SteamLobby.Join(lobbyIDInputString);
+    }
+
+    public void OnCreateSteamLobby(CSteamID createdLobbySteamID)
+    {
+        Debug.LogFormat("Steam Lobby ID: {0}", createdLobbySteamID.ToString());
+    }
+
+    public void OnJoinLobby(CSteamID enteredLobbySteamID)
+    {
+        Debug.LogFormat("Entered Steam Lobby: {0}", enteredLobbySteamID.ToString());
+
+        MainMenuGroup.SetActive(false);
+        LobbyGroup.gameObject.SetActive(true);
+        LobbyGroup.ClearAll();
     }
 }
