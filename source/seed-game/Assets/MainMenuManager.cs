@@ -94,6 +94,14 @@ public class MainMenuManager : MonoBehaviour
         ListServerGroup.gameObject.SetActive(true);
     }
 
+    public void OnLeaveSteamChatLobbyClicked()
+    {
+        MainMenuGroup.SetActive(true);
+        LobbyGroup.gameObject.SetActive(false);
+        LobbyGroup.ClearAllPlayerLobbyCells();
+        SteamLobby.LeaveLobby();
+    }
+
     public void OnCreateSteamChatLobbyClicked()
     {
         SteamLobby.CreateLobby();

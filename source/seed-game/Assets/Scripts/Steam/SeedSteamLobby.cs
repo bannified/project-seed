@@ -46,6 +46,11 @@ public class SeedSteamLobby : MonoBehaviour
         SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 8);
     }
 
+    public void LeaveLobby()
+    {
+        SteamMatchmaking.LeaveLobby(LobbySteamID);
+    }
+
     private void OnLobbyCreated(LobbyCreated_t createdMsg)
     {
         switch (createdMsg.m_eResult)
@@ -98,6 +103,9 @@ public class SeedSteamLobby : MonoBehaviour
     {
         SteamMatchmaking.JoinLobby(new CSteamID(System.Convert.ToUInt64(lobbyId)));
     }
+
+
+    /* Lobby Chat */
 
     public void SendChatMessage(string msg, SeedUserProfile sender = null)
     {
