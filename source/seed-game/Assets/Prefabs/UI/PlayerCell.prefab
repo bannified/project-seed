@@ -49,7 +49,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 061baedb227ab0b4c8eb4b7ce2684bba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BackgroundPanel: {fileID: 7043133969182824889}
   PlayerNameText: {fileID: 7043133969532304684}
+  profile:
+    Name: 
+    UserAvatarHandle: 0
+    UserAvatarSprite: {fileID: 0}
+    SteamID:
+      m_SteamID: 0
+  ReadyColor: {r: 0, g: 1, b: 0, a: 1}
+  NotReadyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &7043133969182824891
 GameObject:
   m_ObjectHideFlags: 0

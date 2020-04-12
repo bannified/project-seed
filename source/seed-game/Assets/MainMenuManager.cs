@@ -21,7 +21,6 @@ public class MainMenuManager : MonoBehaviour
     {
         SteamLobby.LobbyCreatedEvent += OnCreateSteamLobby;
         SteamLobby.LobbyEnterEvent += OnJoinLobby;
-        SteamLobby.LobbyDataUpdated += LobbyGroup.UpdateChatLobby;
     }
 
     public void OnCreateLobbyClicked()

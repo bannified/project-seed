@@ -7,9 +7,11 @@ public class SeedSteamLobby : MonoBehaviour
 {
     private static readonly int MAX_CHAT_MSG_LEN = 500;
 
+    public static readonly string PLAYER_LOBBY_DATA_READY = "IsReady";
+
     public System.Action<CSteamID> LobbyCreatedEvent;
     public System.Action<CSteamID> LobbyEnterEvent;
-    public System.Action<IReadOnlyCollection<CSteamID>> LobbyDataUpdated;
+    public System.Action<CSteamID> PlayerDataUpdated;
 
     public System.Action<CSteamID> PlayerLeaveEvent;
     public System.Action<CSteamID> PlayerEnterEvent;
@@ -77,13 +79,24 @@ public class SeedSteamLobby : MonoBehaviour
     private void OnLobbyEnter(LobbyEnter_t enteredMsg)
     {
         _LobbySteamID = new CSteamID(enteredMsg.m_ulSteamIDLobby);
+        InitPlayerList();
         LobbyEnterEvent?.Invoke(_LobbySteamID);
     }
 
     private void OnLobbyDataUpdate(LobbyDataUpdate_t dataUpdateMsg)
     {
-        InitPlayerList();
-        LobbyDataUpdated?.Invoke(LobbyMembersSteamIDs);
+        CSteamID steamId = new CSteamID(dataUpdateMsg.m_ulSteamIDMember);
+
+        UpdateAllLobbyMemberData(steamId);
+
+        PlayerDataUpdated?.Invoke(steamId);
+    }
+
+    private void UpdateAllLobbyMemberData(CSteamID playerId)
+    {
+        string value = SteamMatchmaking.GetLobbyMemberData(LobbySteamID, playerId, PLAYER_LOBBY_DATA_READY);
+        bool isPlayerReady = value == "true";
+        SetPlayerReadyState(playerId, isPlayerReady);
     }
 
     private void OnLobbyChatUpdate(LobbyChatUpdate_t chatUpdateMsg)
@@ -136,6 +149,7 @@ public class SeedSteamLobby : MonoBehaviour
         {
             CSteamID member = SteamMatchmaking.GetLobbyMemberByIndex(_LobbySteamID, lobbyMemberIndex);
             AddPlayerToLobbyList(member);
+            UpdateAllLobbyMemberData(member);
 
             if (before.Count > lobbyMemberIndex)
             {
@@ -169,7 +183,7 @@ public class SeedSteamLobby : MonoBehaviour
         return result;
     }
 
-    public void SetPlayerReadyState(CSteamID playerID, bool state)
+    private void SetPlayerReadyState(CSteamID playerID, bool state)
     {
         _PlayerToReadyStateDict[playerID] = state;
     }
@@ -181,9 +195,8 @@ public class SeedSteamLobby : MonoBehaviour
             return;
         }
 
-        string key = string.Format("{0}_readystate", SeedSteamManager.SeedInstance.LocalUserProfile.SteamID.m_SteamID);
         string value = state ? "true" : "false";
-        SteamMatchmaking.SetLobbyMemberData(_LobbySteamID, key, "true");
+        SteamMatchmaking.SetLobbyMemberData(_LobbySteamID, PLAYER_LOBBY_DATA_READY, value);
     }
 
     /* Lobby Chat */

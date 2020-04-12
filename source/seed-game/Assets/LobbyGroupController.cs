@@ -46,9 +46,11 @@ public class LobbyGroupController : MonoBehaviour
     public void SetupWithLobby(SeedSteamLobby lobby)
     {
         this.CurrentLobby = lobby;
+        UpdateChatLobby(lobby.LobbyMembersSteamIDs);
         CurrentLobby.ChatMessageReceivedEvent += OnReceiveLobbyChatMessage;
         CurrentLobby.PlayerEnterEvent += AddPlayerCell;
         CurrentLobby.PlayerLeaveEvent += RemovePlayerCell;
+        CurrentLobby.PlayerDataUpdated += OnPlayerDataUpdated;
     }
 
     public void Teardown()
@@ -104,6 +106,8 @@ public class LobbyGroupController : MonoBehaviour
         cell.SetupWithUserProfile(profile);
 
         playerNameToLobbyCellMap.Add(profile.SteamID.m_SteamID.ToString(), cell);
+
+        OnPlayerDataUpdated(profile.SteamID);
     }
 
     public void AddPlayer(SeedNetworkRoomPlayer player)
@@ -121,6 +125,15 @@ public class LobbyGroupController : MonoBehaviour
         {
             Destroy(cell.gameObject);
             playerNameToLobbyCellMap.Remove(playerName);
+        }
+    }
+
+    public void OnPlayerDataUpdated(CSteamID playerId)
+    {
+        LobbyPlayerCellController cell;
+        if (playerNameToLobbyCellMap.TryGetValue(playerId.m_SteamID.ToString(), out cell)) {
+            bool isReady = CurrentLobby.IsPlayerReady(playerId);
+            cell.SetReadyStatus(isReady);
         }
     }
 
@@ -146,12 +159,7 @@ public class LobbyGroupController : MonoBehaviour
 
     public void SetPlayerReady(CSteamID playerId, bool ready)
     {
-        if (CurrentLobby == null)
-        {
-            return;
-        }
 
-        CurrentLobby.SetPlayerReadyState(playerId, ready);
     }
 
     public void UpdateChatLobby(IReadOnlyCollection<CSteamID> steamLobbyPlayerList)
