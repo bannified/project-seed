@@ -12,6 +12,7 @@ public class SeedSteamLobby : MonoBehaviour
     private Callback<LobbyCreated_t> m_lobbyCreatedCallback;
     private Callback<LobbyEnter_t> m_lobbyEnterCallback;
     private Callback<LobbyDataUpdate_t> m_lobbyDataUpdateCallback;
+    private Callback<LobbyChatUpdate_t> m_lobbyChatUpdateCallback;
 
     public CSteamID LobbySteamID { get; }
     [SerializeField]
@@ -30,6 +31,7 @@ public class SeedSteamLobby : MonoBehaviour
         m_lobbyCreatedCallback = Callback<LobbyCreated_t>.Create(OnLobbyCreated);
         m_lobbyEnterCallback = Callback<LobbyEnter_t>.Create(OnLobbyEnter);
         m_lobbyDataUpdateCallback = Callback<LobbyDataUpdate_t>.Create(OnLobbyDataUpdate);
+        m_lobbyChatUpdateCallback = Callback<LobbyChatUpdate_t>.Create(OnLobbyChatUpdate);
     }
 
     public void CreateLobby()
@@ -61,10 +63,22 @@ public class SeedSteamLobby : MonoBehaviour
 
     private void OnLobbyDataUpdate(LobbyDataUpdate_t dataUpdateMsg)
     {
+
+        UpdateLobbyMembersList();
+        LobbyDataUpdated?.Invoke(LobbyMembersSteamIDs);
+    }
+
+    private void OnLobbyChatUpdate(LobbyChatUpdate_t chatUpdateMsg)
+    {
+        UpdateLobbyMembersList();
+        LobbyDataUpdated?.Invoke(LobbyMembersSteamIDs);
+    }
+
+    private void UpdateLobbyMembersList()
+    {
         _LobbyMembersSteamIDs.Clear();
 
         int numLobbyMembers = SteamMatchmaking.GetNumLobbyMembers(_LobbySteamID);
-        _LobbyMembersSteamIDs.Capacity = numLobbyMembers;
         for (int lobbyMemberIndex = 0; lobbyMemberIndex < numLobbyMembers; lobbyMemberIndex++)
         {
             CSteamID member = SteamMatchmaking.GetLobbyMemberByIndex(_LobbySteamID, lobbyMemberIndex);
@@ -72,8 +86,6 @@ public class SeedSteamLobby : MonoBehaviour
 
             SeedSteamManager.SeedInstance.FetchSteamUserInfo(member);
         }
-
-        LobbyDataUpdated?.Invoke(LobbyMembersSteamIDs);
     }
 
     public void Join(string lobbyId)
