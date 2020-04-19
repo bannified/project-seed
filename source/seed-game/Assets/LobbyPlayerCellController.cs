@@ -12,6 +12,9 @@ public class LobbyPlayerCellController : MonoBehaviour
     private TMPro.TMP_Text PlayerNameText;
 
     [SerializeField]
+    private Image avatarImage;
+
+    [SerializeField]
     private SeedUserProfile profile;
 
     [SerializeField]
@@ -34,6 +37,7 @@ public class LobbyPlayerCellController : MonoBehaviour
     {
         this.profile = profile;
         SetPlayerName(profile.Name);
+        avatarImage.sprite = profile.UserAvatarSprite;
     }
 
     public void SetupWithUserProfile(SeedUserProfile profile)
