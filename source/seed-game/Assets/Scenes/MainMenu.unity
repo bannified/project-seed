@@ -1331,7 +1331,7 @@ MonoBehaviour:
   dontDestroyOnLoad: 1
   runInBackground: 1
   startOnHeadless: 1
-  showDebugMessages: 0
+  showDebugMessages: 1
   serverTickRate: 30
   offlineScene: 
   onlineScene: 
@@ -1343,7 +1343,8 @@ MonoBehaviour:
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 1
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 5890560936853567077, guid: b7dd46dbf38c643f09e206f9fa4be008, type: 3}
   gameScene: TestTankScene
 --- !u!4 &692956766
 Transform:
