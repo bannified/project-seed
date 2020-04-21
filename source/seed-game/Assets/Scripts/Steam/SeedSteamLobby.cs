@@ -9,11 +9,11 @@ public class SeedSteamLobby : MonoBehaviour
 
 
     /* Lobby-specific Lobby Data Keys */
-    public static readonly string LOBBY_STATUS_KEY = "LobbyStatus";
+    public const string LOBBY_STATUS_KEY = "LobbyStatus";
 
-    public static readonly string LOBBY_STATUS_STARTED_VALUE = "Started";
-    public static readonly string LOBBY_STATUS_STARTING_VALUE = "Starting";
-    public static readonly string LOBBY_STATUS_WAITING_VALUE = "Waiting";
+    public const string LOBBY_STATUS_STARTED_VALUE = "Started";
+    public const string LOBBY_STATUS_STARTING_VALUE = "Starting";
+    public const string LOBBY_STATUS_WAITING_VALUE = "Waiting";
 
     /* Player-specific Lobby Data Keys */
     public static readonly string PLAYER_LOBBY_DATA_READY = "IsReady";
@@ -24,6 +24,10 @@ public class SeedSteamLobby : MonoBehaviour
 
     public System.Action<CSteamID> PlayerLeaveEvent;
     public System.Action<CSteamID> PlayerEnterEvent;
+
+    public System.Action GameStartInterruptedEvent;
+    public System.Action GameStartInitiatedEvent;
+    public System.Action GameStartedEvent;
 
     public System.Action<string, SeedUserProfile> ChatMessageReceivedEvent;
 
@@ -106,7 +110,28 @@ public class SeedSteamLobby : MonoBehaviour
 
         UpdateAllLobbyMemberData(steamId);
 
+        CheckLobbyGameStatus();
+
         PlayerDataUpdated?.Invoke(steamId);
+    }
+
+    private void CheckLobbyGameStatus()
+    {
+        string value = SteamMatchmaking.GetLobbyData(LobbySteamID, LOBBY_STATUS_KEY);
+        switch (value)
+        {
+            case LOBBY_STATUS_STARTED_VALUE:
+                GameStartedEvent?.Invoke();
+                break;
+            case LOBBY_STATUS_STARTING_VALUE:
+                GameStartInitiatedEvent?.Invoke();
+                break;
+            case LOBBY_STATUS_WAITING_VALUE:
+                GameStartInterruptedEvent?.Invoke();
+                break;
+            default:
+                break;
+        }
     }
 
     private void OnLobbyChatUpdate(LobbyChatUpdate_t chatUpdateMsg)
@@ -236,19 +261,7 @@ public class SeedSteamLobby : MonoBehaviour
         }
 
         SteamMatchmaking.SetLobbyData(_LobbySteamID, LOBBY_STATUS_KEY, LOBBY_STATUS_STARTED_VALUE);
-    }
-
-    public void GoIntoGame()
-    {
-        if (SeedSteamManager.SeedInstance == null)
-        {
-            return;
-        }
-
-        if (_LobbyOwnerID == SeedSteamManager.SeedInstance.UserSteamID) // is host
-        {
-            SeedGameNetworkManager.SeedInstance.HostChangeToGameScene();
-        }
+        //SeedGameNetworkManager.SeedInstance.HostChangeToGameScene();
     }
 
     public bool IsLobbyReady()

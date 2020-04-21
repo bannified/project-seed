@@ -46,6 +46,34 @@ public class LobbyGroupController : MonoBehaviour
         }
     }
 
+    public void InitiateGameStart()
+    {
+        CurrentLobby.InitiateGameStart();
+    }
+
+    public void GameStart()
+    {
+        CurrentLobby.GameStart();
+    }
+
+    public void GoIntoGame()
+    {
+        if (SeedSteamManager.SeedInstance == null)
+        {
+            return;
+        }
+
+        if (CurrentLobby.LobbyOwnerID == SeedSteamManager.SeedInstance.UserSteamID) // is host
+        {
+            SeedGameNetworkManager.SeedInstance.HostChangeToGameScene();
+        }
+        else
+        {
+            SeedGameNetworkManager.SeedInstance.networkAddress = CurrentLobby.LobbyOwnerID.ToString();
+            SeedGameNetworkManager.SeedInstance.StartClient();
+        }
+    }
+
     public void SetupWithLobby(SeedSteamLobby lobby)
     {
         this.CurrentLobby = lobby;
@@ -63,6 +91,8 @@ public class LobbyGroupController : MonoBehaviour
         CurrentLobby.PlayerEnterEvent += AddPlayerCell;
         CurrentLobby.PlayerLeaveEvent += RemovePlayerCell;
         CurrentLobby.PlayerDataUpdated += OnPlayerDataUpdated;
+
+        CurrentLobby.GameStartedEvent += GoIntoGame;
     }
 
     public void Teardown()
