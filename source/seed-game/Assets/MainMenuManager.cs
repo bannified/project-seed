@@ -115,6 +115,7 @@ public class MainMenuManager : MonoBehaviour
     public void OnCreateSteamLobby(CSteamID createdLobbySteamID)
     {
         Debug.LogFormat("Steam Lobby ID: {0}", createdLobbySteamID.ToString());
+        SeedGameNetworkManager.SeedInstance.StartHost();
     }
 
     public void OnJoinLobby(CSteamID enteredLobbySteamID)

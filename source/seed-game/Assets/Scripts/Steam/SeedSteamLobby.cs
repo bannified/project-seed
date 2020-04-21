@@ -7,6 +7,15 @@ public class SeedSteamLobby : MonoBehaviour
 {
     private static readonly int MAX_CHAT_MSG_LEN = 500;
 
+
+    /* Lobby-specific Lobby Data Keys */
+    public static readonly string LOBBY_STATUS_KEY = "LobbyStatus";
+
+    public static readonly string LOBBY_STATUS_STARTED_VALUE = "Started";
+    public static readonly string LOBBY_STATUS_STARTING_VALUE = "Starting";
+    public static readonly string LOBBY_STATUS_WAITING_VALUE = "Waiting";
+
+    /* Player-specific Lobby Data Keys */
     public static readonly string PLAYER_LOBBY_DATA_READY = "IsReady";
 
     public System.Action<CSteamID> LobbyCreatedEvent;
@@ -32,6 +41,10 @@ public class SeedSteamLobby : MonoBehaviour
     public CSteamID CreatedSteamID { get { return _CreatedLobbySteamID; } }
     [SerializeField]
     private CSteamID _CreatedLobbySteamID;
+
+    public CSteamID LobbyOwnerID { get { return _LobbyOwnerID; } }
+    [SerializeField]
+    private CSteamID _LobbyOwnerID;
 
     /* Players in Lobby */
     [SerializeField]
@@ -61,6 +74,8 @@ public class SeedSteamLobby : MonoBehaviour
         SteamMatchmaking.LeaveLobby(LobbySteamID);
     }
 
+    /* -------- Callbacks for SteamMatchmaking API ----------- */
+
     private void OnLobbyCreated(LobbyCreated_t createdMsg)
     {
         switch (createdMsg.m_eResult)
@@ -74,11 +89,13 @@ public class SeedSteamLobby : MonoBehaviour
                 break;
         }
         _CreatedLobbySteamID = new CSteamID(createdMsg.m_ulSteamIDLobby);
+        LobbyCreatedEvent?.Invoke(_CreatedLobbySteamID);
     }
 
     private void OnLobbyEnter(LobbyEnter_t enteredMsg)
     {
         _LobbySteamID = new CSteamID(enteredMsg.m_ulSteamIDLobby);
+        _LobbyOwnerID = SteamMatchmaking.GetLobbyOwner(_LobbySteamID);
         InitPlayerList();
         LobbyEnterEvent?.Invoke(_LobbySteamID);
     }
@@ -90,13 +107,6 @@ public class SeedSteamLobby : MonoBehaviour
         UpdateAllLobbyMemberData(steamId);
 
         PlayerDataUpdated?.Invoke(steamId);
-    }
-
-    private void UpdateAllLobbyMemberData(CSteamID playerId)
-    {
-        string value = SteamMatchmaking.GetLobbyMemberData(LobbySteamID, playerId, PLAYER_LOBBY_DATA_READY);
-        bool isPlayerReady = value == "true";
-        SetPlayerReadyState(playerId, isPlayerReady);
     }
 
     private void OnLobbyChatUpdate(LobbyChatUpdate_t chatUpdateMsg)
@@ -119,6 +129,15 @@ public class SeedSteamLobby : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    /* ------- END callback methods for SteamMatchmaking API --------- */
+
+    private void UpdateAllLobbyMemberData(CSteamID playerId)
+    {
+        string value = SteamMatchmaking.GetLobbyMemberData(LobbySteamID, playerId, PLAYER_LOBBY_DATA_READY);
+        bool isPlayerReady = value == "true";
+        SetPlayerReadyState(playerId, isPlayerReady);
     }
 
     private void AddPlayerToLobbyList(CSteamID playerId)
@@ -197,6 +216,54 @@ public class SeedSteamLobby : MonoBehaviour
 
         string value = state ? "true" : "false";
         SteamMatchmaking.SetLobbyMemberData(_LobbySteamID, PLAYER_LOBBY_DATA_READY, value);
+    }
+
+    public void InitiateGameStart()
+    {
+        if (SeedSteamManager.SeedInstance == null)
+        {
+            return;
+        }
+
+        SteamMatchmaking.SetLobbyData(_LobbySteamID, LOBBY_STATUS_KEY, LOBBY_STATUS_STARTING_VALUE);
+    }
+
+    public void GameStart()
+    {
+        if (SeedSteamManager.SeedInstance == null)
+        {
+            return;
+        }
+
+        SteamMatchmaking.SetLobbyData(_LobbySteamID, LOBBY_STATUS_KEY, LOBBY_STATUS_STARTED_VALUE);
+    }
+
+    public void GoIntoGame()
+    {
+        if (SeedSteamManager.SeedInstance == null)
+        {
+            return;
+        }
+
+        if (_LobbyOwnerID == SeedSteamManager.SeedInstance.UserSteamID) // is host
+        {
+            SeedGameNetworkManager.SeedInstance.HostChangeToGameScene();
+        }
+    }
+
+    public bool IsLobbyReady()
+    {
+        foreach (var id in _LobbyMembersSteamIDs)
+        {
+            bool ready = false;
+            _PlayerToReadyStateDict.TryGetValue(id, out ready);
+            if (!ready)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /* Lobby Chat */

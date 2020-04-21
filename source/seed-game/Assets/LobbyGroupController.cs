@@ -29,6 +29,9 @@ public class LobbyGroupController : MonoBehaviour
     [SerializeField]
     private TMP_Text ChatHistoryText;
 
+    [SerializeField]
+    private Button StartGameButton;
+
     private void Awake()
     {
         playerNameToLobbyCellMap = new Dictionary<string, LobbyPlayerCellController>();
@@ -46,6 +49,15 @@ public class LobbyGroupController : MonoBehaviour
     public void SetupWithLobby(SeedSteamLobby lobby)
     {
         this.CurrentLobby = lobby;
+
+        if (lobby.LobbyOwnerID.m_SteamID == SeedSteamManager.SeedInstance.LocalUserProfile.SteamID.m_SteamID)
+        {
+            StartGameButton.gameObject.SetActive(true);
+        } else
+        {
+            StartGameButton.gameObject.SetActive(false);
+        }
+
         UpdateChatLobby(lobby.LobbyMembersSteamIDs);
         CurrentLobby.ChatMessageReceivedEvent += OnReceiveLobbyChatMessage;
         CurrentLobby.PlayerEnterEvent += AddPlayerCell;
@@ -134,6 +146,15 @@ public class LobbyGroupController : MonoBehaviour
         if (playerNameToLobbyCellMap.TryGetValue(playerId.m_SteamID.ToString(), out cell)) {
             bool isReady = CurrentLobby.IsPlayerReady(playerId);
             cell.SetReadyStatus(isReady);
+        }
+
+        if (CurrentLobby.IsLobbyReady())
+        {
+            StartGameButton.interactable = true;
+        }
+        else
+        {
+            StartGameButton.interactable = false;
         }
     }
 

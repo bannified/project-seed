@@ -255,7 +255,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 692956764}
+      - m_Target: {fileID: 0}
         m_MethodName: SetHostname
         m_Mode: 0
         m_Arguments:
@@ -1254,6 +1254,8 @@ MonoBehaviour:
     m_SteamID: 0
   _CreatedLobbySteamID:
     m_SteamID: 0
+  _LobbyOwnerID:
+    m_SteamID: 0
   _LobbyMembersSteamIDs: []
 --- !u!1 &692956762
 GameObject:
@@ -1268,7 +1270,7 @@ GameObject:
   - component: {fileID: 692956767}
   - component: {fileID: 692956763}
   m_Layer: 0
-  m_Name: SeedRoomManager
+  m_Name: SeedNetworkManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1281,7 +1283,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 692956762}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c7424c1070fad4ba2a7a96b02fbeb4bb, type: 3}
   m_Name: 
@@ -1323,13 +1325,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 692956762}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40ab0316352c0424485f2ab803938041, type: 3}
+  m_Script: {fileID: 11500000, guid: 3367340a2094036439ec00fd4a7726ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   dontDestroyOnLoad: 1
   runInBackground: 1
   startOnHeadless: 1
-  showDebugMessages: 1
+  showDebugMessages: 0
   serverTickRate: 30
   offlineScene: 
   onlineScene: 
@@ -1337,16 +1339,12 @@ MonoBehaviour:
   networkAddress: localhost
   maxConnections: 4
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 4875305777125232474, guid: c2e6115f31195134ab6c8dcc6f18b539,
+  playerPrefab: {fileID: 1916082411674582, guid: 6f43bf5488a7443d19ab2a83c6b91f35,
     type: 3}
-  autoCreatePlayer: 0
-  playerSpawnMethod: 0
+  autoCreatePlayer: 1
+  playerSpawnMethod: 1
   spawnPrefabs: []
-  mainMenuManager: {fileID: 1569225351}
-  lobbyGroup: {fileID: 198213072}
-  steamTransport: {fileID: 692956767}
-  directIPTransport: {fileID: 692956763}
-  roomPlayers: []
+  gameScene: TestTankScene
 --- !u!4 &692956766
 Transform:
   m_ObjectHideFlags: 0
@@ -3823,7 +3821,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 692956764}
+      - m_Target: {fileID: 0}
         m_MethodName: set_playerName
         m_Mode: 0
         m_Arguments:
@@ -4187,7 +4185,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 692956764}
+      objectReference: {fileID: 0}
     - target: {fileID: 2339865239512918904, guid: a9c96f0725edbd04cb60aca46482e5ec,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
@@ -4426,6 +4424,36 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: OnLeaveSteamChatLobbyClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 3645600689973915400, guid: 799fa9e9b747b0d4f9864adbe12c3f16,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3645600689973915400, guid: 799fa9e9b747b0d4f9864adbe12c3f16,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3645600689973915400, guid: 799fa9e9b747b0d4f9864adbe12c3f16,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3645600689973915400, guid: 799fa9e9b747b0d4f9864adbe12c3f16,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 692956764}
+    - target: {fileID: 3645600689973915400, guid: 799fa9e9b747b0d4f9864adbe12c3f16,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: HostChangeToGameScene
+      objectReference: {fileID: 0}
+    - target: {fileID: 3645600689973915400, guid: 799fa9e9b747b0d4f9864adbe12c3f16,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 3645600690826413403, guid: 799fa9e9b747b0d4f9864adbe12c3f16,
         type: 3}
