@@ -17,6 +17,12 @@ public class SeedGameNetworkManager : NetworkManager
     public string gameScene = "";
 
     /// <summary>
+    /// A flag to control whether or not player objects are automatically created ONLY on scene change.
+    /// </summary>
+    [Tooltip("Should Mirror automatically spawn the player ONLY after scene change?")]
+    public bool autoCreatePlayerPostSceneChange = true;
+
+    /// <summary>
     /// This is to be called when the host wants to start the game actual, when all clients have joined in.
     /// </summary>
     public void HostChangeToGameScene()
@@ -140,7 +146,15 @@ public class SeedGameNetworkManager : NetworkManager
     /// <param name="conn">The network connection that the scene change message arrived on.</param>
     public override void OnClientSceneChanged(NetworkConnection conn)
     {
-        base.OnClientSceneChanged(conn);
+        // always become ready.
+        if (!ClientScene.ready) ClientScene.Ready(conn);
+
+        // Only call AddPlayer for normal scene changes, not additive load/unload
+        if (clientSceneOperation == SceneOperation.Normal && autoCreatePlayerPostSceneChange && ClientScene.localPlayer == null)
+        {
+            // add player if existing one is null
+            ClientScene.AddPlayer();
+        }
     }
 
     /// <summary>
