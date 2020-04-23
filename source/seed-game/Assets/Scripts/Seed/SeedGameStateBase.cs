@@ -73,4 +73,12 @@ public class SeedGameStateBase : NetworkBehaviour
         --PlayerCount;
     }
 
+    public override void OnStartServer()
+    {
+        Setup();
+    }
+
+    public override void OnStartClient()
+    {
+    }
 }

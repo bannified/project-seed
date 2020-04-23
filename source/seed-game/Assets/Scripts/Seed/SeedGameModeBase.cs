@@ -86,7 +86,6 @@ public class SeedGameModeBase : NetworkBehaviour
     public override void OnStartServer()
     {
         GameState = Instantiate<SeedGameStateBase>(GameStatePrefab);
-        GameState.Setup();
         NetworkServer.Spawn(GameState.gameObject);
     }
 
