@@ -4263,6 +4263,12 @@ PrefabInstance:
       propertyPath: autoCreatePlayerPostSceneChange
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4258319627159356681, guid: 94e02e32748d84742acf191d5a971d8c,
+        type: 3}
+      propertyPath: spawnPrefabs.Array.data[0]
+      value: 
+      objectReference: {fileID: 34681615366309588, guid: c89616550f12f3943a66c708e28f2379,
+        type: 3}
     - target: {fileID: 4258319627159356683, guid: 94e02e32748d84742acf191d5a971d8c,
         type: 3}
       propertyPath: m_LocalPosition.x

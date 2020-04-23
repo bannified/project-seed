@@ -63,5 +63,5 @@ MonoBehaviour:
   syncInterval: 0.1
   GameStatePrefab: {fileID: 4586530330842996436, guid: 7591d05fd96ffb941afc597ecb6efc01,
     type: 3}
-  PlayerCount: 0
+  StartingNumPlayers: 0
   GameState: {fileID: 0}
