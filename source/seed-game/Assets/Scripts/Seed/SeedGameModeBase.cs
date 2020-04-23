@@ -41,9 +41,6 @@ public class SeedGameModeBase : NetworkBehaviour
 
         _instance = this;
         DontDestroyOnLoad(this);
-
-        GameState = Instantiate<SeedGameStateBase>(GameStatePrefab);
-        GameState.Setup();
     }
 
     public void SetNumPlayers(int numPlayers)
@@ -88,16 +85,18 @@ public class SeedGameModeBase : NetworkBehaviour
     /// </summary>
     public override void OnStartServer()
     {
+        GameState = Instantiate<SeedGameStateBase>(GameStatePrefab);
+        GameState.Setup();
         NetworkServer.Spawn(GameState.gameObject);
     }
 
     public override void OnStartClient()
     {
         // this should only be called on the server
-        if (!isServer)
-        {
-            throw new Exception("SeedGameModeBase is on not on the server");
-        }
+        //if (!isServer)
+        //{
+        //    throw new Exception("SeedGameModeBase is on not on the server");
+        //}
     }
 
     public override void OnStartLocalPlayer()
