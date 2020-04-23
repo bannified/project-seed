@@ -47,6 +47,7 @@ public class SeedGameStateBase : NetworkBehaviour
 
     private void OnPlayerCountChanged(int oldCount, int newCount)
     {
+        PlayerCount = newCount;
         if (isServer)
         {
             EventPlayerCountChanged?.Invoke(PlayerCount, StartingNumPlayers);
@@ -55,6 +56,7 @@ public class SeedGameStateBase : NetworkBehaviour
 
     private void OnNumPlayersChanged(int oldNum, int newNum)
     {
+        StartingNumPlayers = newNum;
         if (isServer)
         {
             EventPlayerCountChanged?.Invoke(PlayerCount, StartingNumPlayers);
