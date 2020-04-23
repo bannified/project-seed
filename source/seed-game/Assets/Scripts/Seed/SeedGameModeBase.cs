@@ -94,6 +94,10 @@ public class SeedGameModeBase : NetworkBehaviour
     public override void OnStartClient()
     {
         // this should only be called on the server
+        if (!isServer)
+        {
+            throw new Exception("SeedGameModeBase is on not on the server");
+        }
     }
 
     public override void OnStartLocalPlayer()
