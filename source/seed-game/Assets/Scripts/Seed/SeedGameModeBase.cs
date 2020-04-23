@@ -49,6 +49,13 @@ public class SeedGameModeBase : NetworkBehaviour
     public void SetNumPlayers(int numPlayers)
     {
         GameState.StartingNumPlayers = numPlayers;
+        RpcSetNumPlayers(numPlayers);
+    }
+
+    [ClientRpc]
+    public void RpcSetNumPlayers(int numPlayers)
+    {
+        GameState.StartingNumPlayers = numPlayers;
     }
 
     public void RegisterPlayer(SeedPlayer player)
@@ -56,6 +63,14 @@ public class SeedGameModeBase : NetworkBehaviour
         player.GameId = RunningPlayerId;
         ++RunningPlayerId;
         PlayerNumberToPlayer.Add(player.GameId, player);
+        ++GameState.PlayerCount;
+        RpcUpdatePlayerCount();
+    }
+
+
+    [ClientRpc]
+    public void RpcUpdatePlayerCount()
+    {
         ++GameState.PlayerCount;
     }
 
