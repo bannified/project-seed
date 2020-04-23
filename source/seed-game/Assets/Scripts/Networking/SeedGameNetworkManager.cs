@@ -4,6 +4,27 @@ using UnityEngine;
 using Mirror;
 using System;
 
+public enum GamePlayerType
+{
+    PLAYER,
+    SPECTATOR, // Does not actively participate in the game, hands visibility is dependent on room settings
+    ADMIN, // Is able to view every aspect of the game, even change the room's settings
+}
+
+public class SeedAddGamePlayerMessage : MessageBase
+{
+    public GamePlayerType playerType;
+    public ulong uid;
+
+    public SeedAddGamePlayerMessage() { }
+
+    public SeedAddGamePlayerMessage(GamePlayerType playerType, SeedUserProfile profile)
+    {
+        this.playerType = playerType;
+        this.uid = profile.SteamID.m_SteamID;
+    }
+}
+
 public class SeedGameNetworkManager : NetworkManager
 {
     public static SeedGameNetworkManager SeedInstance { get { return singleton as SeedGameNetworkManager; } }
@@ -22,12 +43,36 @@ public class SeedGameNetworkManager : NetworkManager
     [Tooltip("Should Mirror automatically spawn the player ONLY after scene change?")]
     public bool autoCreatePlayerPostSceneChange = true;
 
+    [SerializeField]
+    private SeedGameModeBase GameModePrefab;
+
+    [SerializeField]
+    private SeedPlayer SeedPlayerPrefab;
+
+    [ReadOnly]
+    [SerializeField]
+    private SeedGameModeBase GameMode;
+
+    public int numExpectedPlayers;
+
     /// <summary>
     /// This is to be called when the host wants to start the game actual, when all clients have joined in.
     /// </summary>
     public void HostChangeToGameScene()
     {
+        GameMode.SetNumPlayers(numExpectedPlayers);
         ServerChangeScene(gameScene);
+    }
+
+    private void OnAddPlayerMessageReceived(NetworkConnection conn, SeedAddGamePlayerMessage msg)
+    {
+        SeedPlayer player = Instantiate<SeedPlayer>(SeedPlayerPrefab);
+        player.ulSteamId = msg.uid;
+        DontDestroyOnLoad(player.gameObject);
+
+        GameMode.RegisterPlayer(player);
+
+        NetworkServer.AddPlayerForConnection(conn, player.gameObject);
     }
 
     public override void ServerChangeScene(string newSceneName)
@@ -101,6 +146,11 @@ public class SeedGameNetworkManager : NetworkManager
     {
         Debug.Log(string.Format("Player from {0} has connected.", conn.address));
         base.OnClientConnect(conn);
+
+        conn.Send<SeedAddGamePlayerMessage>(new SeedAddGamePlayerMessage(
+            GamePlayerType.PLAYER, 
+            SeedSteamManager.SeedInstance.LocalUserProfile
+            ));
     }
 
     /// <summary>
@@ -148,13 +198,6 @@ public class SeedGameNetworkManager : NetworkManager
     {
         // always become ready.
         if (!ClientScene.ready) ClientScene.Ready(conn);
-
-        // Only call AddPlayer for normal scene changes, not additive load/unload
-        if (clientSceneOperation == SceneOperation.Normal && autoCreatePlayerPostSceneChange && ClientScene.localPlayer == null)
-        {
-            // add player if existing one is null
-            ClientScene.AddPlayer();
-        }
     }
 
     /// <summary>
@@ -162,7 +205,8 @@ public class SeedGameNetworkManager : NetworkManager
     /// </summary>
     public override void OnStartHost()
     {
-
+        GameMode = Instantiate<SeedGameModeBase>(GameModePrefab);
+        NetworkServer.Spawn(GameMode.gameObject);
     }
 
     /// <summary>
@@ -170,7 +214,8 @@ public class SeedGameNetworkManager : NetworkManager
     /// </summary>
     public override void OnStartServer()
     {
-
+        base.OnStartServer();
+        NetworkServer.RegisterHandler<SeedAddGamePlayerMessage>(OnAddPlayerMessageReceived);
     }
 
     /// <summary>

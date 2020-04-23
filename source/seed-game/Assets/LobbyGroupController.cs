@@ -32,6 +32,10 @@ public class LobbyGroupController : MonoBehaviour
     [SerializeField]
     private Button StartGameButton;
 
+    public int NumPlayers { get { return _numPlayers; } }
+    [SerializeField]
+    private int _numPlayers;
+
     private void Awake()
     {
         playerNameToLobbyCellMap = new Dictionary<string, LobbyPlayerCellController>();
@@ -65,6 +69,7 @@ public class LobbyGroupController : MonoBehaviour
 
         if (CurrentLobby.LobbyOwnerID == SeedSteamManager.SeedInstance.UserSteamID) // is host
         {
+            SeedGameNetworkManager.SeedInstance.numExpectedPlayers = CurrentLobby.LobbyMembersSteamIDs.Count;
             SeedGameNetworkManager.SeedInstance.HostChangeToGameScene();
         }
         else

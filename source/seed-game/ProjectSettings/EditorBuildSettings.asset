@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: fc7745055484f5c409a58c4694984fc8
   - enabled: 1
+    path: Assets/Scenes/MainGame.unity
+    guid: cd475a5f330087a4eb6cf2b9912b45c9
+  - enabled: 1
     path: Assets/Scenes/TestTankScene.unity
     guid: d2c2f253351f88842bb8c63378e82453
   - enabled: 0
