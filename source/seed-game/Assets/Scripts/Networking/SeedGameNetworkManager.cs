@@ -146,7 +146,7 @@ public class SeedGameNetworkManager : NetworkManager
     {
         Debug.Log(string.Format("Player from {0} has connected.", conn.address));
         base.OnClientConnect(conn);
-
+        ClientScene.AddPlayer();
         conn.Send<SeedAddGamePlayerMessage>(new SeedAddGamePlayerMessage(
             GamePlayerType.PLAYER, 
             SeedSteamManager.SeedInstance.LocalUserProfile

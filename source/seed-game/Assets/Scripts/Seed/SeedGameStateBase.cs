@@ -23,7 +23,7 @@ public class SeedGameStateBase : NetworkBehaviour
     [SyncVar(hook = nameof(OnPlayerCountChanged))]
     public int PlayerCount;
 
-    [SyncVar(hook = nameof(OnPlayerCountChanged))]
+    [SyncVar(hook = nameof(OnNumPlayersChanged))]
     public int StartingNumPlayers;
 
     [ClientRpc]
@@ -47,7 +47,6 @@ public class SeedGameStateBase : NetworkBehaviour
 
     private void OnPlayerCountChanged(int oldCount, int newCount)
     {
-        PlayerCount = newCount;
         if (isServer)
         {
             EventPlayerCountChanged?.Invoke(PlayerCount, StartingNumPlayers);
@@ -56,7 +55,6 @@ public class SeedGameStateBase : NetworkBehaviour
 
     private void OnNumPlayersChanged(int oldNum, int newNum)
     {
-        StartingNumPlayers = newNum;
         if (isServer)
         {
             EventPlayerCountChanged?.Invoke(PlayerCount, StartingNumPlayers);
