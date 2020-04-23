@@ -145,8 +145,10 @@ public class SeedGameNetworkManager : NetworkManager
     public override void OnClientConnect(NetworkConnection conn)
     {
         Debug.Log(string.Format("Player from {0} has connected.", conn.address));
-        base.OnClientConnect(conn);
+
+        if (!ClientScene.ready) ClientScene.Ready(conn);
         ClientScene.AddPlayer();
+
         conn.Send<SeedAddGamePlayerMessage>(new SeedAddGamePlayerMessage(
             GamePlayerType.PLAYER, 
             SeedSteamManager.SeedInstance.LocalUserProfile
