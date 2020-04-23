@@ -38,7 +38,9 @@ public override void OnStartServer() { }
 /// Called on every NetworkBehaviour when it is activated on a client.
 /// <para>Objects on the host have this function called, as there is a local client on the host. The values of SyncVars on object are guaranteed to be initialized correctly with the latest state from the server when this function is called on the client.</para>
 /// </summary>
-public override void OnStartClient() { }
+public override void OnStartClient() {
+        DontDestroyOnLoad(this.gameObject);
+    }
 
 /// <summary>
 /// Called when the local player object has been set up.

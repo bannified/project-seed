@@ -68,10 +68,9 @@ public class SeedGameNetworkManager : NetworkManager
     {
         SeedPlayer player = Instantiate<SeedPlayer>(SeedPlayerPrefab);
         player.ulSteamId = msg.uid;
-        DontDestroyOnLoad(player.gameObject);
+        //DontDestroyOnLoad(player.gameObject);
 
         GameMode.RegisterPlayer(player);
-
         NetworkServer.AddPlayerForConnection(conn, player.gameObject);
     }
 
@@ -103,7 +102,7 @@ public class SeedGameNetworkManager : NetworkManager
 
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
-        base.OnServerAddPlayer(conn);
+        //base.OnServerAddPlayer(conn);
     }
 
     public override void OnServerRemovePlayer(NetworkConnection conn, NetworkIdentity player)
