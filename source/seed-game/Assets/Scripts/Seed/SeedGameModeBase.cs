@@ -93,7 +93,7 @@ public class SeedGameModeBase : NetworkBehaviour
 
     public override void OnStartClient()
     {
-        throw new NotImplementedException();
+        // this should only be called on the server
     }
 
     public override void OnStartLocalPlayer()
