@@ -71,6 +71,8 @@ MonoBehaviour:
     type: 3}
   GameMode: {fileID: 0}
   numExpectedPlayers: 0
+  steamTransport: {fileID: 4258319627159356682}
+  directIPTransport: {fileID: 4258319627159356686}
 --- !u!114 &4258319627159356682
 MonoBehaviour:
   m_ObjectHideFlags: 0

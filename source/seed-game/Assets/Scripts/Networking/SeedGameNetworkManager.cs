@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using System;
+using Sirenix.OdinInspector;
 
 public enum GamePlayerType
 {
@@ -25,6 +26,7 @@ public class SeedAddGamePlayerMessage : MessageBase
     }
 }
 
+[RequireComponent(typeof(Mirror.FizzySteam.FizzySteamyMirror), typeof(Mirror.TelepathyTransport))]
 public class SeedGameNetworkManager : NetworkManager
 {
     public static SeedGameNetworkManager SeedInstance { get { return singleton as SeedGameNetworkManager; } }
@@ -46,6 +48,7 @@ public class SeedGameNetworkManager : NetworkManager
     [SerializeField]
     private SeedGameModeBase GameModePrefab;
 
+    [Required][AssetsOnly]
     [SerializeField]
     private SeedPlayer SeedPlayerPrefab;
 
@@ -54,6 +57,14 @@ public class SeedGameNetworkManager : NetworkManager
     private SeedGameModeBase GameMode;
 
     public int numExpectedPlayers;
+
+    [Required]
+    [SerializeField]
+    private Transport steamTransport; // For Fizzy
+
+    [Required]
+    [SerializeField]
+    private Transport directIPTransport; // For Telepathy
 
     /// <summary>
     /// This is to be called when the host wants to start the game actual, when all clients have joined in.
@@ -74,6 +85,18 @@ public class SeedGameNetworkManager : NetworkManager
         NetworkServer.AddPlayerForConnection(conn, player.gameObject);
     }
 
+    public void SwitchToDirectIPTransport()
+    {
+        Transport.activeTransport = directIPTransport;
+        transport = directIPTransport;
+    }
+
+    public void SwitchToSteamTransport()
+    {
+        Transport.activeTransport = steamTransport;
+        transport = steamTransport;
+    }
+
     public override void ServerChangeScene(string newSceneName)
     {
         base.ServerChangeScene(newSceneName);
@@ -88,6 +111,7 @@ public class SeedGameNetworkManager : NetworkManager
     public override void OnServerConnect(NetworkConnection conn)
     {
         base.OnServerConnect(conn);
+        GameMode.SetNumPlayers(numExpectedPlayers);
 
         NetworkServer.SetClientReady(conn);
     }
