@@ -171,7 +171,10 @@ public class LobbyGroupController : MonoBehaviour
         LobbyPlayerCellController cell;
         if (playerNameToLobbyCellMap.TryGetValue(playerName, out cell))
         {
-            Destroy(cell.gameObject);
+            if (cell != null)
+            {
+                Destroy(cell.gameObject);
+            }
             playerNameToLobbyCellMap.Remove(playerName);
         }
     }
