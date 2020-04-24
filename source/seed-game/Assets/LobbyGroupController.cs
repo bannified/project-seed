@@ -74,6 +74,7 @@ public class LobbyGroupController : MonoBehaviour
         }
         else
         {
+            SeedGameNetworkManager.SeedInstance.numExpectedPlayers = CurrentLobby.LobbyMembersSteamIDs.Count;
             SeedGameNetworkManager.SeedInstance.networkAddress = CurrentLobby.LobbyOwnerID.ToString();
             SeedGameNetworkManager.SeedInstance.StartClient();
         }

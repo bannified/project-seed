@@ -26,14 +26,18 @@ public class SeedGameStateBase : NetworkBehaviour
     [SyncVar(hook = nameof(OnNumPlayersChanged))]
     public int StartingNumPlayers;
 
-    [ClientRpc]
-    public virtual void RpcStartGame()
+    private void Awake()
     {
-
+        Setup();
     }
 
     public virtual void Setup()
     {
+        if (_instance == this)
+        {
+            return;
+        }
+
         if (_instance != null)
         {
             Debug.LogErrorFormat("There's already an instance of SeedGameStateBase on {0}!", _instance.name);
@@ -75,7 +79,6 @@ public class SeedGameStateBase : NetworkBehaviour
 
     public override void OnStartServer()
     {
-        Setup();
     }
 
     public override void OnStartClient()
