@@ -27,10 +27,9 @@ public class MainMenuManager : MonoBehaviour
     {
         MainMenuGroup.SetActive(false);
         LobbyGroup.gameObject.SetActive(true);
-        if (NetworkManager.singleton is SeedNetworkRoomManager room)
-        {
-            room.SwitchToDirectIPTransport();
-        }
+
+        SeedGameNetworkManager.SeedInstance.SwitchToDirectIPTransport();
+
         NetworkManager.singleton.StartHost();
     }
 
@@ -38,10 +37,7 @@ public class MainMenuManager : MonoBehaviour
     {
         MainMenuGroup.SetActive(false);
         LobbyGroup.gameObject.SetActive(true);
-        if (NetworkManager.singleton is SeedNetworkRoomManager room)
-        {
-            room.SwitchToDirectIPTransport();
-        }
+        SeedGameNetworkManager.SeedInstance.SwitchToDirectIPTransport();
 
         NetworkManager.singleton.StartClient();
     }
@@ -50,11 +46,7 @@ public class MainMenuManager : MonoBehaviour
     {
         MainMenuGroup.SetActive(false);
         LobbyGroup.gameObject.SetActive(true);
-        if (NetworkManager.singleton is SeedNetworkRoomManager room)
-        {
-            room.playerName = SeedSteamManager.SeedInstance.UserSteamName;
-            room.SwitchToSteamTransport();
-        }
+        SeedGameNetworkManager.SeedInstance.SwitchToSteamTransport();
         NetworkManager.singleton.StartHost();
     }
 

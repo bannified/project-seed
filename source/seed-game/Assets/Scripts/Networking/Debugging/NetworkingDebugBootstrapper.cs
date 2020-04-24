@@ -70,13 +70,14 @@ public class NetworkingDebugBootstrapper : MonoBehaviour
                 break;
         }
 
+        networkManager.networkAddress = networkAddress;
+
         switch (connectionType)
         {
             case ConnectionType.Host:
                 networkManager.StartHost();
                 break;
             case ConnectionType.Client:
-                networkManager.networkAddress = networkAddress;
                 networkManager.StartClient();
                 break;
             case ConnectionType.Server:
