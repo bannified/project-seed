@@ -88,6 +88,8 @@ public class SeedGameNetworkManager : NetworkManager
     public override void OnServerConnect(NetworkConnection conn)
     {
         base.OnServerConnect(conn);
+
+        NetworkServer.SetClientReady(conn);
     }
 
     public override void OnServerDisconnect(NetworkConnection conn)
