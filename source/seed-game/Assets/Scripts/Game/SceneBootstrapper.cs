@@ -6,12 +6,13 @@ using Sirenix.OdinInspector;
 
 public class SceneBootstrapper : MonoBehaviour
 {
+    [SceneObjectsOnly]
     public List<GameObject> ToBootstrapWithPlayer;
 
     [SceneObjectsOnly]
     public List<GameObject> ToBootstrapWithGameState;
 
-    public void TryBootstrap()
+    public void TryBootstrapAll()
     {
         if (SeedGameStateBase.instance == null)
         {
@@ -25,6 +26,11 @@ public class SceneBootstrapper : MonoBehaviour
             {
                 toBootstrap.SetupWithGameState(SeedGameStateBase.instance);
             }
+        }
+
+        if (ClientScene.localPlayer == null)
+        {
+            return;
         }
 
         SeedPlayer player = ClientScene.localPlayer.GetComponent<SeedPlayer>();

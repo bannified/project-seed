@@ -261,6 +261,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerCountText: {fileID: 1174849659}
+  StartGameButton: {fileID: 1026104669}
 --- !u!1 &959767098
 GameObject:
   m_ObjectHideFlags: 0
@@ -425,7 +426,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1026104670}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 448562143}
+        m_MethodName: StartGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1026104670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1083,7 +1095,7 @@ PrefabInstance:
     - target: {fileID: 886070965214163283, guid: a36944ae2b3fc1f4c80c68f5afbbee63,
         type: 3}
       propertyPath: numExpectedPlayers
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 886070965214163283, guid: a36944ae2b3fc1f4c80c68f5afbbee63,
         type: 3}
@@ -1098,7 +1110,7 @@ PrefabInstance:
     - target: {fileID: 886070965214163283, guid: a36944ae2b3fc1f4c80c68f5afbbee63,
         type: 3}
       propertyPath: connectionType
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a36944ae2b3fc1f4c80c68f5afbbee63, type: 3}
@@ -1109,14 +1121,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: sceneId
+      value: 3998125814
+      objectReference: {fileID: 0}
     - target: {fileID: 5430215246772559704, guid: 6c06a2cfa96354d4396f2d7a91fb0ed9,
         type: 3}
       propertyPath: m_Name
       value: SceneBootstrapper
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: sceneId
-      value: 3998125814
       objectReference: {fileID: 0}
     - target: {fileID: 5430215246772559707, guid: 6c06a2cfa96354d4396f2d7a91fb0ed9,
         type: 3}

@@ -50,7 +50,7 @@ public class SeedPlayer : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         SceneBootstrapper bootstrapper = FindObjectOfType<SceneBootstrapper>();
-        bootstrapper.TryBootstrap();
+        bootstrapper.TryBootstrapAll();
     }
 
     /// <summary>

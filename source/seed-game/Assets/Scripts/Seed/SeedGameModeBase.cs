@@ -24,11 +24,11 @@ public class SeedGameModeBase : NetworkBehaviour
     [SerializeField]
     public Dictionary<int, SeedPlayer> PlayerNumberToPlayer = new Dictionary<int, SeedPlayer>();
 
-    public int StartingNumPlayers;
-
     [ReadOnly]
     [SerializeField]
     private SeedGameStateBase GameState;
+
+    public System.Action<int, int> PlayerCountUpdated;
 
     private void Awake()
     {
@@ -41,6 +41,19 @@ public class SeedGameModeBase : NetworkBehaviour
 
         _instance = this;
         DontDestroyOnLoad(this);
+
+        PlayerCountUpdated += CheckStartGame;
+    }
+
+    private void CheckStartGame(int currPlayers, int numPlayers)
+    {
+        if (isServerOnly)
+        {
+            if (currPlayers >= numPlayers)
+            {
+                StartGame();
+            }
+        }
     }
 
     public void SetNumPlayers(int numPlayers)
@@ -54,6 +67,8 @@ public class SeedGameModeBase : NetworkBehaviour
         ++RunningPlayerId;
         PlayerNumberToPlayer.Add(player.GameId, player);
         ++GameState.PlayerCount;
+
+        PlayerCountUpdated?.Invoke(GameState.PlayerCount, GameState.StartingNumPlayers);
     }
 
     public void UnregisterPlayer(SeedPlayer player)
@@ -63,6 +78,8 @@ public class SeedGameModeBase : NetworkBehaviour
             PlayerNumberToPlayer.Remove(player.GameId);
         }
         --GameState.PlayerCount;
+
+        PlayerCountUpdated?.Invoke(GameState.PlayerCount, GameState.StartingNumPlayers);
     }
 
     public virtual void CheckServerStatus()
@@ -87,6 +104,12 @@ public class SeedGameModeBase : NetworkBehaviour
     {
         GameState = Instantiate<SeedGameStateBase>(GameStatePrefab);
         NetworkServer.Spawn(GameState.gameObject);
+
+        if (NetworkManager.singleton.mode == NetworkManagerMode.ServerOnly)
+        {
+            SceneBootstrapper bootstrapper = FindObjectOfType<SceneBootstrapper>();
+            bootstrapper.TryBootstrapAll();
+        }
     }
 
     public override void OnStartClient()

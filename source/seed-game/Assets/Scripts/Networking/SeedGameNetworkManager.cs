@@ -111,7 +111,6 @@ public class SeedGameNetworkManager : NetworkManager
     public override void OnServerConnect(NetworkConnection conn)
     {
         base.OnServerConnect(conn);
-        GameMode.SetNumPlayers(numExpectedPlayers);
 
         NetworkServer.SetClientReady(conn);
     }
@@ -232,8 +231,7 @@ public class SeedGameNetworkManager : NetworkManager
     /// </summary>
     public override void OnStartHost()
     {
-        GameMode = Instantiate<SeedGameModeBase>(GameModePrefab);
-        NetworkServer.Spawn(GameMode.gameObject);
+
     }
 
     /// <summary>
@@ -242,6 +240,13 @@ public class SeedGameNetworkManager : NetworkManager
     public override void OnStartServer()
     {
         base.OnStartServer();
+
+        GameMode = Instantiate<SeedGameModeBase>(GameModePrefab);
+
+        NetworkServer.Spawn(GameMode.gameObject);
+
+        GameMode.SetNumPlayers(numExpectedPlayers);
+
         NetworkServer.RegisterHandler<SeedAddGamePlayerMessage>(OnAddPlayerMessageReceived);
     }
 
