@@ -2,20 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using Sirenix.OdinInspector;
 
 public class SceneBootstrapper : MonoBehaviour
 {
     public List<GameObject> ToBootstrapWithPlayer;
+
+    [SceneObjectsOnly]
     public List<GameObject> ToBootstrapWithGameState;
 
-    private void Start()
+    public void TryBootstrap()
     {
+        if (SeedGameStateBase.instance == null)
+        {
+            return;
+        }
+
         foreach (GameObject obj in ToBootstrapWithGameState)
         {
             IGameStateBootstrap[] casted = obj.GetComponents<IGameStateBootstrap>();
             foreach (IGameStateBootstrap toBootstrap in casted)
             {
-                toBootstrap.SetupWithGameState();
+                toBootstrap.SetupWithGameState(SeedGameStateBase.instance);
             }
         }
 
@@ -28,12 +36,11 @@ public class SceneBootstrapper : MonoBehaviour
 
         foreach (GameObject obj in ToBootstrapWithPlayer)
         {
-            IPlayerBootstrap[] casted = obj.GetComponents<IPlayerBootstrap>();
-            foreach (IPlayerBootstrap toBootstrap in casted)
+            ILocalPlayerBootstrap[] casted = obj.GetComponents<ILocalPlayerBootstrap>();
+            foreach (ILocalPlayerBootstrap toBootstrap in casted)
             {
                 toBootstrap.SetupWithPlayer(player);
             }
         }
     }
-
 }

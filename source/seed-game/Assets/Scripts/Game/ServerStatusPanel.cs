@@ -3,16 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class ServerStatusPanel : MonoBehaviour
+public class ServerStatusPanel : MonoBehaviour, IGameStateBootstrap
 {
     [SerializeField]
     private TMP_Text PlayerCountText;
-
-    private void Start()
-    {
-        UpdatePlayerCountText(SeedGameStateBase.instance.PlayerCount, SeedGameStateBase.instance.StartingNumPlayers);
-        SeedGameStateBase.instance.EventPlayerCountChanged += UpdatePlayerCountText;
-    }
 
     private void UpdatePlayerCountText(int current, int max)
     {
@@ -27,4 +21,9 @@ public class ServerStatusPanel : MonoBehaviour
         SeedGameModeBase.Instance.StartGame();
     }
 
+    public void SetupWithGameState(SeedGameStateBase gameState)
+    {
+        UpdatePlayerCountText(SeedGameStateBase.instance.PlayerCount, SeedGameStateBase.instance.StartingNumPlayers);
+        SeedGameStateBase.instance.EventPlayerCountChanged += UpdatePlayerCountText;
+    }
 }

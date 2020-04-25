@@ -87,5 +87,7 @@ public class NetworkingDebugBootstrapper : MonoBehaviour
                 break;
         }
 
+        Destroy(this.gameObject);
+
     }
 }

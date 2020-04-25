@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IPlayerBootstrap
+public interface ILocalPlayerBootstrap
 {
     void SetupWithPlayer(SeedPlayer player);
 }
 
 public interface IGameStateBootstrap
 {
-    void SetupWithGameState();
+    void SetupWithGameState(SeedGameStateBase gameState);
 }

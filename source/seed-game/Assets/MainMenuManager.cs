@@ -23,6 +23,11 @@ public class MainMenuManager : MonoBehaviour
         SteamLobby.LobbyEnterEvent += OnJoinLobby;
     }
 
+    public void SetNetworkAddress(string address)
+    {
+        NetworkManager.singleton.networkAddress = address;
+    }
+
     public void OnCreateLobbyClicked()
     {
         MainMenuGroup.SetActive(false);
